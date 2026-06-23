@@ -1,0 +1,939 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>MindScape DOS Dungeon // Enhanced Story Crawler</title><meta name=description content="A single-file old-school DOS-style first-person dungeon crawler built from the MindScape RPG book: cinematic dungeon graphics, story beings, equipment, party panels, automap, encounters, bosses, and a full ending."><meta name=theme-color content=#030403><style>
+:root{--bg:#020302;--panel:#061109;--panel2:#0d2012;--green:#55ff66;--acid:#b8ff65;--gold:#ffdc63;--red:#ff3355;--cyan:#48eaff;--vio:#c96cff;--ink:#edffe8;--dim:#79b67a;--edge:#55ff6688;--black:#000;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;--shadow:0 0 32px #55ff6630}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#000;color:var(--ink);font-family:var(--mono);overflow:hidden;touch-action:manipulation;-webkit-font-smoothing:none;text-rendering:geometricPrecision}body{background:radial-gradient(circle at 50% 18%,#152611 0,#030503 62%,#000 100%)}body:after{content:"";position:fixed;inset:0;z-index:90;pointer-events:none;background:repeating-linear-gradient(0deg,#0000 0 2px,#0008 3px 4px),radial-gradient(ellipse at 50% 50%,#0000 47%,#000c 100%);mix-blend-mode:multiply}#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.62}#app{position:relative;z-index:2;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:linear-gradient(180deg,#0009,#020402ef)}button,.btn{font:900 .74rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(180deg,#143018,#030703);color:var(--ink);border:1px solid var(--edge);border-radius:2px;padding:.72rem .82rem;cursor:pointer;box-shadow:inset 0 0 20px #55ff6614,0 0 12px #000;text-decoration:none}button:hover,.btn:hover,button:focus-visible{color:#fff;border-color:var(--gold);box-shadow:0 0 20px #55ff6655,inset 0 0 22px #55ff6622;outline:none}.hot{background:linear-gradient(180deg,#9b2a20,#2f0a08);border-color:#ffdc63;color:#fff8c8}.danger{border-color:#ff335599!important;color:#ffd4dc!important}.blue{border-color:#48eaff99!important;color:#d8fbff!important}.tiny{font-size:.68rem;color:var(--dim);line-height:1.36}kbd{border:1px solid #55ff6670;background:#000;color:#fff;padding:.08rem .28rem}
+#gate{position:fixed;inset:0;z-index:120;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 36%,#213512,#020302 74%);padding:1rem}#gate.off{display:none}.gatebox{width:min(940px,94vw);border:1px solid var(--edge);box-shadow:0 0 90px #55ff6638,inset 0 0 70px #55ff6614;background:linear-gradient(180deg,#061006f3,#000e);padding:clamp(1rem,4vw,3rem);position:relative;overflow:hidden}.gatebox:before{content:"";position:absolute;inset:-30%;background:conic-gradient(transparent,#55ff6630,transparent,#48eaff24,transparent,#ff335522,transparent);animation:spin 24s linear infinite;filter:blur(36px)}.gatebox>*{position:relative}.sigil{width:140px;max-width:38vw;aspect-ratio:1;margin:0 auto 1rem;filter:drop-shadow(0 0 24px var(--green))}h1{font-size:clamp(2.8rem,8.5vw,7.2rem);line-height:.82;margin:.15rem 0;color:#021006;-webkit-text-stroke:1px var(--green);text-shadow:0 0 15px var(--green),0 0 55px #48eaff88,0 0 92px #ff335577;letter-spacing:.06em;text-transform:uppercase}.subtitle{color:#e1ffd2;line-height:1.5;max-width:72ch;margin:1rem auto}.gateBtns{display:flex;flex-wrap:wrap;gap:.55rem;justify-content:center;margin-top:1rem}@keyframes spin{to{transform:rotate(1turn)}}
+#top{display:flex;align-items:center;gap:.5rem;min-height:45px;padding:.42rem .6rem;border-bottom:1px solid var(--edge);background:#041006ee;box-shadow:var(--shadow);white-space:nowrap;overflow:hidden}#brand{font-weight:1000;color:var(--gold);text-shadow:0 0 12px var(--gold);letter-spacing:.16em}#where{color:var(--cyan);overflow:hidden;text-overflow:ellipsis}.grow{flex:1}.chip{color:var(--dim);font-size:.72rem}#main{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:.5rem;padding:.5rem}.frame{border:1px solid var(--edge);background:#000;box-shadow:inset 0 0 60px #55ff6612,0 18px 52px #000b;overflow:hidden;position:relative;min-width:0}.viewport{display:grid;grid-template-rows:minmax(0,1fr) 116px;min-height:0}#view{width:100%;height:100%;display:block;image-rendering:pixelated}.viewHud{position:absolute;left:.55rem;top:.55rem;right:.55rem;display:flex;gap:.45rem;align-items:center;pointer-events:none}.hudBox{background:#000b;border:1px solid #55ff6655;color:#dffff0;padding:.35rem .5rem;font-size:.68rem;text-shadow:0 0 8px #55ff66}.compass{margin-left:auto;color:var(--gold);border-color:#ffdc6355}.caption{position:absolute;left:50%;bottom:126px;transform:translateX(-50%);width:min(900px,94%);max-height:38%;overflow:auto;background:#000d;border:1px solid #ffdc63aa;color:#fffad0;text-shadow:0 0 12px #ffdc6390;padding:1rem;font-size:clamp(.78rem,1.25vw,.98rem);line-height:1.55;box-shadow:0 0 34px #000,0 0 30px #ffdc6320;display:none}.caption.on{display:block;animation:cap .22s ease}@keyframes cap{from{opacity:0;transform:translate(-50%,10px)}}
+#console{border-top:1px solid #55ff6655;background:linear-gradient(180deg,#020402,#000);display:grid;grid-template-columns:1fr 210px;min-height:0}.log{padding:.65rem;overflow:auto;font-size:.74rem;line-height:1.38;color:#b9ffbd;text-shadow:0 0 8px #55ff6638}.log p{margin:.14rem 0 .5rem}.log b{color:var(--gold)}.miniMapWrap{border-left:1px solid #55ff663e;padding:.45rem;background:#030703}#map{width:100%;height:92px;background:#000;image-rendering:pixelated;border:1px solid #55ff663c;display:block}.legend{font-size:.63rem;color:var(--dim);padding-top:.25rem;line-height:1.25}.side{display:grid;grid-template-rows:auto minmax(0,1fr);gap:.5rem;min-width:0}.panel{border:1px solid #55ff665a;background:linear-gradient(180deg,#07120bdd,#020402f5);box-shadow:inset 0 0 28px #55ff660e;min-width:0;overflow:hidden}.panel h2{font-size:.72rem;letter-spacing:.18em;color:var(--gold);margin:0;padding:.5rem .62rem;border-bottom:1px solid #55ff663d;background:#0005;text-transform:uppercase}.party{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;padding:.5rem}.pc{border:1px solid #55ff6638;background:linear-gradient(180deg,#000b,#071507c8);display:grid;grid-template-columns:58px 1fr;gap:.45rem;padding:.38rem;min-width:0;cursor:pointer;position:relative}.pc.sel{border-color:var(--gold);box-shadow:0 0 22px #ffdc6333}.portrait{width:58px;height:66px;border:1px solid #48eaff55;background:#000;overflow:hidden;box-shadow:inset 0 0 18px #48eaff22}.pc b{color:#fff;font-size:.86rem}.bars{display:grid;gap:2px}.bar{height:7px;background:#151515;border:1px solid #ffffff1d}.bar i{display:block;height:100%}.hp i{background:linear-gradient(90deg,var(--red),var(--gold),var(--green))}.pp i{background:linear-gradient(90deg,#3b57ff,var(--cyan))}.xp i{background:linear-gradient(90deg,var(--vio),var(--gold))}.slots{display:flex;gap:.18rem;flex-wrap:wrap;margin-top:.2rem}.slot{border:1px solid #55ff6630;background:#0008;min-width:24px;height:22px;display:grid;place-items:center;font-size:.8rem;color:var(--gold)}.story{display:grid;grid-template-rows:auto 1fr;min-height:0}.quest{padding:.58rem;overflow:auto;font-size:.72rem;line-height:1.45;color:#d6ffd1}.quest b{color:var(--gold)}.flag{display:inline-block;border:1px solid #55ff6645;margin:.12rem;padding:.18rem .3rem;background:#0008}.flag.on{color:#fff;border-color:#ffdc63;background:#4c3308}
+#dock{border-top:1px solid var(--edge);background:#040c05f4;padding:.42rem;display:grid;grid-template-columns:1fr 1.2fr;gap:.45rem}.moves,.acts{display:flex;gap:.32rem;flex-wrap:wrap;align-items:center}.moves button{min-width:2.85rem}.acts button{flex:1 1 auto}.bossbar{position:absolute;top:50px;left:50%;transform:translateX(-50%);width:min(640px,88%);background:#000d;border:1px solid #ff3355aa;padding:.45rem;display:none;z-index:5}.bossbar.on{display:block}.bossbar b{color:#fff;text-shadow:0 0 12px #ff3355}.bossbar .hpbar{height:12px;background:#170606;border:1px solid #ff335555;margin-top:.3rem}.bossbar .hpbar i{display:block;height:100%;background:linear-gradient(90deg,#ff3355,#ffdc63)}
+#modal{position:fixed;inset:0;z-index:100;display:none;background:#000d;padding:clamp(.6rem,3vw,1.4rem);overflow:auto}#modal.on{display:block}.modalbox{max-width:1160px;margin:auto;border:1px solid var(--edge);background:#041006f8;box-shadow:0 0 70px #55ff6630;padding:1rem;position:relative}.modalTop{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}.modalTitle{font-size:1.25rem;color:var(--gold);font-weight:1000;letter-spacing:.12em}.close{margin-left:auto}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.6rem}.card{border:1px solid #55ff6640;background:#0009;padding:.7rem;min-height:90px}.card b{color:var(--gold)}.equipGrid{display:grid;grid-template-columns:260px 1fr;gap:1rem}.paper{border:1px solid #ffdc6355;min-height:320px;background:radial-gradient(circle at 50% 25%,#1a1705,#020402 70%);display:grid;place-items:center}.equipSlots{display:grid;gap:.55rem}.eqrow{display:grid;grid-template-columns:82px 1fr;gap:.45rem;align-items:start}.itemBtns{display:flex;gap:.32rem;flex-wrap:wrap}.itemBtns button{font-size:.65rem;padding:.5rem}.talk{border:1px solid #ffdc6380;background:linear-gradient(180deg,#151103,#030302);padding:1rem}.talk h2{color:var(--gold);margin-top:0}.choices{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}.toast{position:fixed;z-index:130;left:50%;top:52px;transform:translateX(-50%);max-width:min(780px,92vw);background:#000e;border:1px solid var(--gold);color:#fffbd0;padding:.62rem .86rem;box-shadow:0 0 28px #ffdc6640;display:none}.toast.on{display:block}.hidden{display:none!important}
+@media(max-width:980px){html,body{overflow:auto;height:auto;min-height:100%}#app{min-height:100vh;height:auto}#main{grid-template-columns:1fr;grid-template-rows:58vh auto;overflow:visible}.viewport{min-height:58vh}#console{grid-template-columns:1fr}.miniMapWrap{border-left:0;border-top:1px solid #55ff663e}.side{grid-template-rows:auto auto}.caption{bottom:126px;max-height:42%;font-size:.76rem}#dock{grid-template-columns:1fr}.party{grid-template-columns:1fr 1fr}.equipGrid{grid-template-columns:1fr}.paper{min-height:230px}}@media(max-width:560px){#top{font-size:.72rem;flex-wrap:wrap;white-space:normal}#brand{letter-spacing:.08em}.chip{display:none}#main{padding:.32rem;gap:.32rem;grid-template-rows:54vh auto}.viewport{grid-template-rows:minmax(0,1fr) 154px}.caption{bottom:162px;width:96%;padding:.65rem}.log{font-size:.66rem}.party{grid-template-columns:1fr}.pc{grid-template-columns:52px 1fr}.portrait{width:52px;height:60px}button{padding:.62rem .56rem;font-size:.63rem}.moves button{min-width:2.35rem}.modalbox{padding:.65rem}.cards{grid-template-columns:1fr}.gateBtns button{width:100%}h1{font-size:3.15rem}}
+</style></head><body><canvas id=stars></canvas><div id=gate><div class=gatebox><div class=sigil id=gateSig></div><h1>MindScape<br>Dungeon</h1><p class=subtitle>A first-person dungeon crawler through the Nuclear Twilight. Lead a party of four, equip relics and weapons, parley with the story beings of the MindScape, master spells, and break the seals beneath Mt. Truth.</p><p class=difflabel>CHOOSE YOUR DIFFICULTY</p><div class=gateBtns><button class=hot onclick="window._chosenDiff=0;startGame()">◇ Explorer</button><button class=hot onclick="window._chosenDiff=1;startGame()">◆ Standard</button><button class=hot onclick="window._chosenDiff=2;startGame()">★ Hardcore</button></div><div class=gateBtns><button onclick="openCodex()">Open Codex</button><button onclick="loadGame()">Load Save</button></div><p class=credit>✦ Adapted from the <b>MindScape RPG</b> by <b>Luminosity</b> — Matthew Kowalski ✦<br>Support the work: <b class=cash>$unixarcade</b> on CashApp</p><p class=tiny>Keys: <kbd>W</kbd>/<kbd>↑</kbd> forward · <kbd>A</kbd>/<kbd>←</kbd> turn left · <kbd>D</kbd>/<kbd>→</kbd> turn right · <kbd>S</kbd>/<kbd>↓</kbd> back · <kbd>Space</kbd> use/talk · <kbd>E</kbd> equip · mobile controls below.</p></div></div><div id=app><header id=top><span id=brand>◈ MINDSCAPE DOS II</span><span id=where>BOOTING</span><span class=grow></span><span class=chip id=turn>TURN 0</span><button onclick="openCodex()">Codex</button><button onclick="openEquip()">Equip</button><button onclick="saveGame()">Save</button><button onclick="toggleSound()" id=soundBtn>Sound</button></header><main id=main><section class="frame viewport"><canvas id=view></canvas><div class=viewHud><span class=hudBox id=viewMode>GRID CRAWL</span><span class="hudBox compass" id=compass>DIR E</span></div><div id=bossbar class=bossbar></div><div id=caption class=caption></div><div id=console><div id=log class=log></div><div class=miniMapWrap><canvas id=map></canvas><div class=legend>MAP: <span style="color:#55ff66">S</span> start · <span style="color:#ffdc63">T</span> treasure · <span style="color:#48eaff">C</span> crystal · <span style="color:#c96cff">O</span> oracle · <span style="color:#fff">N/W</span> beings · <span style="color:#ff3355">B</span> boss</div></div></div></section><aside class=side><div class=panel><h2>Character Panels / Equipment</h2><div id=party class=party></div></div><div class="panel story"><h2>Story State</h2><div id=quest class=quest></div></div></aside></main><footer id=dock><div class=moves><button onclick="turn(-1)">◀ Turn</button><button onclick="move(1)">▲ Step</button><button onclick="turn(1)">Turn ▶</button><button onclick="move(-1)">▼ Back</button><button onclick="interact()">◆ Talk/Use</button><button onclick="look()">Look</button></div><div class=acts><button onclick="attack()">Attack</button><button onclick="castSpell('Heal')">Heal</button><button onclick="castSpell('Zelios Ball Blast')">Zelio Blast</button><button onclick="castSpell('Force Field')">Force Field</button><button onclick="useItem()">Item</button><button onclick="rest()">Camp</button></div></footer></div><div id=modal><div class=modalbox><div class=modalTop><div class=modalTitle id=modalTitle>CODEX</div><button class=close onclick="closeModal()">Close</button></div><div id=modalContent></div></div></div><div id=toast class=toast></div><script>
+const DATA={"sections":[["Story & World",2,2,"The nuclear twilight, New Earth, clans, Mt. Truth, and the first myth of MindScape."],["Core Rules",3,9,"The d6 system, hit points, stats, endurance, power points, combat, and experience."],["Races",10,21,"Humans, Goblins, Invisibles, Skeletons, Aces, Gremlins, Jacks, Lupan, Beasts, and Witches."],["Clans",22,29,"Bear, Chameleon, Dinosaur, Hawk, Putty, Spider, Snake, Wolf, and Wolverine clans."],["Skills",30,42,"Animal Masters, Fighters, Hypnotists, Inventors, Mages, Magicians, Monks, Ninjas, Spies, and Thieves."],["Spells",43,49,"Spell levels from Bad Gas and Strange Hands through Dimension Door, Resurrection, Wish, and Godly Endowment."],["Mutant Abilities",50,52,"Thirty mutant powers from aerial displacement to weather and weight control."],["Equipment & Items",53,61,"Thin gold, equipment, armor, weapons, magic items, and strange technology."],["Creature Codex",62,122,"The complete v49 creature archive rebuilt into searchable web text."],["Shout Outs & Index",123,124,"The original acknowledgments, web links, and final index preserved."]],"races":["Human","Goblin","Invisibles","Skeletons","Aces","Gremlins","Jacks","Lupan","Beasts","Witch"],"clans":["Bear","Chameleon","Dinosaur","Hawk","Putty","Spider","Snake","Wolf","Wolverine"],"skills":["Animal Master","Fighter","Hypnotist","Inventor","Mage","Magician","Monk","Ninja","Spy","Thief"],"spells":["Bad Gas","Strange Hands","Flight","Iron Fist","Goop","Heal","Zelios Ball Blast","Telepathy","Mystical Aura","Snapshot","Pie Throw","Breath of Air","Magical Music","Cureal","Procrastinate","Trickster","Holy Fire","Zelio's Arrow Strike","Power Thorn","Dispel","Bigheaded","Pottie","Throwing Cards","Playball","Zelios Bullet Barrage","Hologram","Mind Boggle","Changeling","Disappearing Hat","Hanky Control","Bitro","Trixie","Screaming Souls","T rex","Ghostly","Demonex","Zelios Hail Pelt","Invisio","Sleepwalk","Screech of Death","Mind Sword","Power Form","Double Image","Force Field","Binding the Force","World Walk","Sleeping Candy","Flash","Acid","Pollinate","Secret Symmetry","Skeleton Army","Dimension Door","Resurrection","Wish","Godly Endowment"],"mutants":["Aerial Displacement","Ballblaster","Body Weaponry","Breathing Under Water","Chameleon","Chance It","Death Touch","Disgusto","Elasticity","Fat Shot","Flare","Fluctuation","Glare","Hard-shell","Advanced Hearing","Insect Control","Mind Boggle","Mystical Sounds","Phasing","Plant Control","Shock Shoot","Shrink and Grow","Advanced Sense of Smell","Sonar","Advanced Taste Buds","Telekinesis","Advanced Sense of Touch","Trap","Weather Control","Weight Control"],"creatures":["APOTEREX","Bear","Big Bone Daddy","Biometal","Bitsandpieces","Blob","Blowup","Buckethead","CC'S","Chameleon","Clanus","Cloud Creature","Cobra","Crigas","Crow","DarkSpider","DeathMan","Dire Wolf","Doll","Dragadar","Earthforce","Elemental","Fairy","Firefly","Flamers","Flicker","Gatinear","Giantrat","Giant Squid","Grammelant","Hydrofiend","Icy","Ironfist","Killem","Killnics","Life Fairy","Mocapishue","Mole","Muly","Ooze","Petrodactyl","Praying Mantis","Psycho","Queen Thrasher","Quotaire","Reptilis","Spider","SPIKE","Spirit","Sponge","Squid","Stark","Thrasher","Tike","Toadstool","T rex","Water Zipper","WATERDrop","Wolf","Wolf Spirit","Wolverine"],"gear":["Cross","Vial of Holy Water","Gas","Canteen","Tuning Fork","Backpack","Energy Net","Hospital","Scrolls","Car","Truck","House","Shield","Rope","Coat","Helm","Simple Armor","Invis Armor","Quazuki Armor","Regen Armor","Spear","Javelins","Ying Yang Disk","Bow","Crossbow","Daemonite","Chillnite","Netbolt","Poisoned","Explosive","Acid","Shatter Head","Shotgun","Predator Disk","SKS","Ariel Metal","Bodyslide Ball","Fireball","Ice Ball","Lightning Ball","Trixter Mask","Wicked Sword","Triangaleer","Shasma Sword","Collects Crystal","Mordrics Flying Dragon","Rose Water","Crystal of Seeing","Darkeye","Nightmare Staff","Third Eye","Nightmare's Dagger","Shadow Trap","Bow of Creation","Crown of Zago's","Probe","ID Card","Compu Link","Money Chip","Attacker Helm","Power Armlet","Mega Arm","Light Seer","Du Shay","Washie","Back Attack","Artificial Insemination"],"extras":["MindScape","New Earth","Old Earth","Mt. Truth","Upper World","Underground","Underworld","Game Master","Power Points","Hit Points","Thin Gold","Collects Crystal","Fairy","Fairies","Magic","Oracle","Elemental","Elementals","Undead","Mordrics","Zelios","Astomos","Daemonite","Chillnite","Ariel Metal","Isoconetic Balls","Proxy","Dimension","Mutation","Mutant","Werewolf","Familiar","Seal","Chrysalis","Crown of Zago","Nightmare Staff","Shasma Sword","Mordrics Flying Dragon","Mordrics Insects","Rose Water","Crystal of Seeing","Trickster","Trixie","Demonex","Bitro"],"story":{"nuclear":"Story In a world torn by its own, hate. The nightmare that once was shall be no more. On that, fair night when the anger spilled over humanity was lost. It was not to be found until the reconstitution of the planet. Yet it would never be as it once was. It would forever be tainted by the nuclear twilight. Humanity's passions ignorance and unwillingness to get along, forced the world into a terror. It was a M.A.D world on that night. The world was destroyed when all of our nuclear weapons went off at the same moment. At that point, something very odd occurred the world's state changed. The world that we know unraveled to become the world that we know now. The world turned\u2026","upper":"The Upper World The Upper World's beauty is where the danger is. The clouds you are walking on could split lightning could strike. Many of the creatures up there change shape. The clouds take on a life of their own. This is where magic runs rampant, and many a wizard comes to stay, or collects some wares. The crystals are made in the purity of this place. This place is also very desolate. Temporal rifts are known to this area. This world also affects New Earth in some crazy ways. When the fog comes a rolling in you're in for a big surprise. This is when the Upper World meets New Earth. The rain also has special\u2026","underground":"Underground. The Underground is one of the most mysterious places in the world of MindScape. It is where the old world seems to resonate from the caves to the old sewer systems. It is also one of the most dangerous places in MindScape. This is a place where the paranoid, and the cautious survive. The inventive and the ingenious are the real tools of the people who survive. In the world where the sun ain't be shining. This dark world has forced people to change in unimaginable ways. It doesn't help that technology seems to have its own life in this world. It's so hard for people to get technology to the surface\u2026","gear":"Name Cost Dmg & Effect Cross 5 Scares Most Undead Vial of Holy Water 5 5dmg to demons And Undead 10 Gallons of gas 30 Canteen 20 Tuning Fork 10 20 Nail and hammer 30 Pair of Boots 20 Collects crystals at most general trading establishments yet they generally do not sell them. Backpack 75 Energy Net 500030 14dm per round Rations Per Day 10 Clothes 20 Hospital 1000 To regain hit Points and Power Points Witch doctor\u2026","lightseer":"this chip keeps a record of how much $ you have Attacker Helm with this helmet you can defend against psionic attacks at a +1 Power Armlet this item when worn increases dexterity by one And Strength By One Mega Arm with this arm you can produce a bursting laser or a strong blast. the bursting laser has the possibility of harming more than one opponent or target three to be exact it does three damage to three\u2026","apoterex":"Creature Creation Sheet Name: APOTEREX Str: 3 Int: Above Average Spd: 1 mile a minute End: 5 Mag: No Exp worth: 10 $: 15 PP: Head: 3/ R.arm: / Chest:3 / L.arm: / R.leg: / L.leg: / R.wing:3 / L.wing: 3/ Tail: 3/ Powers and Spells: Breathe living smoke once per combat Roll 1 d 10 to see how many gaseous creatures are created. These living gaseous creatues have 1 hit point to all bodily area, they can inflict one damage for every attack. These creatures themselves are worth 1 experience per each destruction. Poison\u2026"},"party":[{"name":"Zelio","race":"Human","clan":"Hawk","skill":"Mage","hp":28,"pp":18,"str":3,"mag":6,"spd":4,"will":6,"spell":["Zelios Ball Blast","Heal","Force Field"]},{"name":"Iron Jack","race":"Gremlin","clan":"Wolverine","skill":"Inventor","hp":34,"pp":8,"str":5,"mag":2,"spd":4,"will":4,"spell":["Iron Fist","Goop","Snapshot"]},{"name":"Moon Wolf","race":"Lupan","clan":"Wolf","skill":"Fighter","hp":40,"pp":6,"str":6,"mag":1,"spd":5,"will":5,"spell":["Power Thorn","Screech of Death"]},{"name":"No-See","race":"Invisibles","clan":"Chameleon","skill":"Spy","hp":26,"pp":12,"str":3,"mag":4,"spd":6,"will":6,"spell":["Invisio","Mind Boggle","Disappearing Hat"]}],"monsters":{"DarkSpider":{"hp":26,"atk":6,"xp":22,"text":"A spider of the Underground flickers like black glass."},"Thrasher":{"hp":32,"atk":7,"xp":26,"text":"The Thrasher hits the dungeon walls hard enough to make dust-runes."},"Fairy":{"hp":12,"atk":3,"xp":10,"text":"A fairy blinks in and out; not all small lights are kind."},"Water Zipper":{"hp":22,"atk":5,"xp":18,"text":"A line of water becomes teeth, speed, and motion."},"Spirit":{"hp":28,"atk":6,"xp":25,"text":"A Spirit remembers Old Earth badly and attacks the living."},"Biometal":{"hp":38,"atk":8,"xp":34,"text":"Biometal walks like a machine remembering it used to breathe."},"Elemental":{"hp":35,"atk":8,"xp":32,"text":"An Elemental condenses from rampant will and wild weather."},"DeathMan":{"hp":44,"atk":9,"xp":50,"text":"DeathMan stands between the old world and the new rules of will."},"Queen Thrasher":{"hp":80,"atk":12,"xp":120,"boss":1,"text":"The Queen Thrasher guards the final seal under Mt. Truth."},"APOTEREX":{"hp":30,"atk":6,"xp":28,"text":"APOTEREX breathes living smoke and dazzles its wings."}}};
+const $=q=>document.querySelector(q), $$=q=>Array.from(document.querySelectorAll(q));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), roll=n=>1+(Math.random()*n|0), pick=a=>a[Math.random()*a.length|0];
+const DIRS=[[0,-1],[1,0],[0,1],[-1,0]], DN=['N','E','S','W'];
+const ITEM={
+ 'Spear':{slot:'weapon',atk:2,icon:'⚔'}, 'Javelins':{slot:'weapon',atk:2,icon:'⌁'}, 'Bow':{slot:'weapon',atk:2,spd:1,icon:'➶'}, 'Crossbow':{slot:'weapon',atk:3,icon:'➴'}, 'Daemonite':{slot:'weapon',atk:3,mag:1,icon:'◆'}, 'Chillnite':{slot:'weapon',atk:3,icon:'❄'}, 'Shasma Sword':{slot:'weapon',atk:6,will:1,icon:'⚔'}, 'Wicked Sword':{slot:'weapon',atk:5,icon:'☠'}, 'Bow of Creation':{slot:'weapon',atk:5,mag:2,icon:'✶'}, 'Mega Arm':{slot:'weapon',atk:4,str:2,icon:'▣'}, 'Nightmare Staff':{slot:'weapon',atk:4,mag:4,will:-1,icon:'☽'},
+ 'Simple Armor':{slot:'armor',def:1,icon:'▤'}, 'Invis Armor':{slot:'armor',def:2,spd:1,icon:'◌'}, 'Quazuki Armor':{slot:'armor',def:4,icon:'▥'}, 'Regen Armor':{slot:'armor',def:2,will:1,icon:'▧'}, 'Shield':{slot:'armor',def:2,icon:'◈'}, 'Helm':{slot:'armor',def:1,icon:'⛑'},
+ 'Cross':{slot:'charm',def:1,will:1,icon:'✚'}, 'Tuning Fork':{slot:'charm',mag:1,pp:4,icon:'♬'}, 'Power Armlet':{slot:'charm',str:1,spd:1,icon:'◍'}, 'Light Seer':{slot:'relic',will:2,mag:1,icon:'◉'}, 'Collects Crystal':{slot:'relic',will:1,mag:1,icon:'◇'}, 'Sky Crystal':{slot:'relic',mag:2,pp:3,icon:'✧'}, 'Crystal of Seeing':{slot:'relic',will:3,mag:1,icon:'◌'}, 'Crown of Zago':{slot:'relic',will:3,mag:2,icon:'♛'}, 'Rose Water':{slot:'charm',def:1,pp:2,icon:'♧'}, 'Spell Book':{slot:'relic',mag:2,pp:4,icon:'▦'}, 'Queen Seal':{slot:'relic',will:2,def:2,icon:'♕'}, 'Dragon Oath':{slot:'charm',atk:1,will:2,icon:'♜'}, 'Wolf Seal':{slot:'charm',atk:1,spd:1,icon:'◖'}
+};
+const levels=[
+{name:'New Earth / Underground Mouth',theme:'#55ff66',floor:'#102414',wall:'#0c1b0f',sky:'#030703',enc:['DarkSpider','Thrasher','Water Zipper','Spirit'],map:['###############','#S....#.......#','#.###.#.#####.#','#...#.#.....#.#','###.#.###.#.#.#','#...#...#.#..N#','#.#####.#.###.#','#...C...#...#.#','#.###.#####.#.#','#.#...T...#...#','#.#.#####.###.#','#...#...#...F.#','###.#.#.###.#.#','#O....#.....X.#','###############'],events:{'1,1':{title:'Nuclear Twilight',txt:DATA.story.nuclear,auto:1},'13,5':{npc:'Gremlin Engineer',title:'Gremlin Engineer',txt:'A Gremlin Engineer has made a workshop out of old sewer glass and a truck battery. He can turn scraps into a Mega Arm if you pay Thin Gold.',choices:[['Pay 60 Thin Gold for Mega Arm',s=>{if(s.gold<60)return say('Gremlin Engineer','Not enough Thin Gold. Come back with the glitter.');s.gold-=60;gain('Mega Arm');flag('gremlin');say('Gremlin Engineer','The Mega Arm clamps onto Iron Jack with a happy electrical shriek. The final machine-boss will remember this insult.')}],['Ask about the old world',s=>say('Gremlin Engineer','Technology seems to have its own life down here. Treat machines like beasts and beasts like machines.')]]},'3,7':{title:'Collects Crystal',txt:'A Collects Crystal clicks in your hand. In the old rules it was currency and catalyst; in the new rules it is a key made from will.',item:'Collects Crystal',quest:'crystal'},'7,9':{title:'Thin Gold Cache',txt:'Thin Gold glitters like old money remembering magic. The party finds Light Seer glass and old-world rations.',gold:90,item:'Light Seer'},'12,11':{npc:'Life Fairy',title:'Life Fairy',txt:'A Life Fairy opens a green door in the dark. She asks whether the party will protect the little lights when the Queen Thrasher comes.',choices:[['Promise protection',s=>{flag('fairy');healParty(22);gain('Rose Water');say('Life Fairy','Then the little lights will stitch your wounds. Rose Water joins your pack.')}],['Take healing only',s=>{healParty(12);say('Life Fairy','Healing without promise is still healing, but the story remembers less.')}]]},'1,13':{npc:'Oracle Echo',title:'Oracle Echo',txt:'Oracle at Mt. Truth: The world is regulated by the rules of the will. Find three seals: crystal, crown, and truth.',choices:[['Accept the rule of will',s=>{flag('oracle');s.quests.oracle=true;s.maxDepth=1;say('Oracle Echo','The rift learns your name. The Upper World may be reached.')}],['Ask about Mt. Truth',s=>say('Oracle Echo','Mt. Truth is not a mountain; it is the place where rule, story, and will agree.')]]},'13,13':{title:'Rift Stair',txt:'The rift opens upward into clouds. The Upper World is beautiful because the danger is beautiful.',stairs:1,need:'oracle'}}},
+{name:'Upper World / Crystal Weather',theme:'#48eaff',floor:'#061d22',wall:'#0a2535',sky:'#06101d',enc:['Fairy','Elemental','APOTEREX','Cloud Creature','Flicker'],map:['###############','#S..F.....#...#','#.###.###.#.#.#','#...#...#...#.#','###.#.#.#####.#','#...#.#...T...#','#.###.###.###.#','#...#..C..#...#','#.#.#####.#.#.#','#.#...W.#...#.#','#.#####.#####.#','#...O.....#N..#','###.#####.#.###','#.......#....X#','###############'],events:{'1,1':{title:'The Upper World',txt:DATA.story.upper,auto:1},'4,1':{npc:'Fairy Ring',title:'Fairy Ring',txt:'Fairies spin around the party. Some are kind. Some bite. This ring trades a spell for a promise.',choices:[['Learn Spell Book',s=>{gain('Spell Book');restorePP(8);flag('fairy');say('Fairy Ring','The Spell Book opens by itself. Zelio hears a new harmony in the wind.')}],['Leave them dancing',s=>say('Fairy Ring','The fairies laugh like silver bells and knives.')]]},'9,5':{title:'Tuning Fork Shrine',txt:'The Tuning Fork vibrates with sky-crystal weather. Force Field becomes stronger.',item:'Tuning Fork'},'7,7':{title:'Sky Collects Crystal',txt:'A pure crystal condenses from rain. It remembers both New Earth and Old Earth.',item:'Sky Crystal'},'6,9':{npc:'Wolf Spirit',title:'Wolf Spirit',txt:'A Wolf Spirit pads across the cloud-floor. It recognizes Moon Wolf and asks whether the party hunts for domination or protection.',choices:[['Answer: protection',s=>{flag('wolf');gain('Wolf Seal');say('Wolf Spirit','Then I will bite the Queen’s shadow when the end comes.')}],['Answer: power',s=>{startBattle('Wolf Spirit',true);say('Wolf Spirit','Then prove the shape of your teeth.')}]]},'3,11':{npc:'Oracle of Weather',title:'Oracle of Weather',txt:'When the fog rolls in, the Upper World meets New Earth. The oracle names the next seal: Crown of Zago.',choices:[['Receive weather omen',s=>{flag('weather');s.quests.weather=true;say('Oracle of Weather','When the clouds split, do not look away. Mt. Truth is below the lightning.')}],['Ask about crystals',s=>say('Oracle of Weather','Crystals are made in the purity of this place, but purity is not safety.')]]},'11,11':{npc:'Cloud Creature',title:'Cloud Creature',txt:'The Cloud Creature has no fixed edge. It can carry a message into the Queen Seal or become hostile weather.',choices:[['Offer Rose Water',s=>{if(!has('Rose Water'))return say('Cloud Creature','No Rose Water, no rain-pact.');flag('cloud');restorePP(10);say('Cloud Creature','The rain-pact forms. Your spells will cut deeper in the final storm.')}],['Attack the cloud',s=>startBattle('Cloud Creature',true)]]},'13,13':{title:'Celestial Bridge',txt:'The bridge to the celestial body burns under your feet and folds down toward Mt. Truth.',stairs:2,need:'weather'}}},
+{name:'Mt. Truth / Queen Seal',theme:'#ffdc63',floor:'#241606',wall:'#35200a',sky:'#120602',enc:['Biometal','DeathMan','Spirit','Queen Thrasher'],map:['###############','#S...#...F....#','#.#.#.#.###.#.#','#.#...#...#.#.#','#.#######.#.#.#','#...T...#.....#','###.###.###.#.#','#C..#O#...#.#.#','#.###.###.#.#.#','#...#..N#...#.#','#.###.#.###.#.#','#...#.#.....#.#','###.#.###.#..B#','#.....#....X..#','###############'],events:{'1,1':{title:'Mt. Truth',txt:'Mt. Truth rises in the reconstituted world: the place where rules become visible and will is tested.',auto:1},'9,1':{npc:'Life Fairy Witness',title:'Life Fairy Witness',txt:'A Fairy witnesses the party and writes their names into a circle of light.',choices:[['Accept witness',s=>{flag('witness');healParty(24);say('Life Fairy Witness','Your names glow on the inside of your shadows.')}]]},'4,5':{title:'Crown of Zago',txt:'The Crown of Zago burns with gold code. It is not jewelry. It is authority over one door.',item:'Crown of Zago',quest:'crown'},'1,7':{title:'Crystal of Seeing',txt:DATA.story.lightseer,item:'Crystal of Seeing',quest:'truth'},'5,7':{npc:'Oracle at Mt. Truth',title:'Oracle at Mt. Truth',txt:'The Oracle speaks: If the Game Master and player decide it is okay, the world can change. The party may now challenge the Queen Seal.',choices:[['Bind the rule',s=>{flag('truth');s.quests.truth=true;say('Oracle at Mt. Truth','The rule is bound. The Queen can be faced, but the Nightmare behind her still waits.')}],['Ask about the end',s=>say('Oracle at Mt. Truth','The end is not the boss. The end is what the boss changes in you.')]]},'7,9':{npc:'Mordrics Flying Dragon',title:'Mordrics Flying Dragon',txt:'A flying dragon made of ancient image and storm is caught in a Shadow Trap. Freeing it may change the final boss.',choices:[['Break Shadow Trap with Crystal of Seeing',s=>{if(!has('Crystal of Seeing'))return say('Mordrics Flying Dragon','You cannot see the trap yet.');flag('dragon');gain('Dragon Oath');say('Mordrics Flying Dragon','The Dragon Oath burns into the party. The Nightmare Staff will lose one wing.')}],['Leave the dragon',s=>say('Mordrics Flying Dragon','Then the trap remains hungry.')]]},'13,12':{title:'Queen Thrasher Seal',txt:'The Queen Thrasher breaks from the wall. This is the boss gate of MindScape.',battle:'Queen Thrasher',quest:'queen'},'11,13':{title:'Final Seal',txt:'The seals answer: Collects Crystal, Crown of Zago, Crystal of Seeing, Queen Seal. Behind the door waits the Nightmare Staff.',win:1}}}
+];
+/* ===== MINDSCAPE DOS II — story + graphics expansion ===== */
+let master=null;
+function _hx(h){h=(h||'#000').replace('#','');if(h.length==3)h=h.split('').map(function(c){return c+c}).join('');return [parseInt(h.slice(0,2),16)||0,parseInt(h.slice(2,4),16)||0,parseInt(h.slice(4,6),16)||0]}
+function shade(h,f){var c=_hx(h);return 'rgb('+Math.min(255,c[0]*f|0)+','+Math.min(255,c[1]*f|0)+','+Math.min(255,c[2]*f|0)+')'}
+function tint(h,f){return shade(h,f)}
+function withHex(h,a){var c=_hx(h);return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'}
+
+function drawIcon(c,tile,s,col,L){
+ if(tile=='C'){c.beginPath();c.moveTo(0,-s);c.lineTo(s*0.6,-s*0.1);c.lineTo(0,s);c.lineTo(-s*0.6,-s*0.1);c.closePath();c.globalAlpha=0.35;c.fill();c.globalAlpha=1;c.stroke();c.beginPath();c.moveTo(0,-s);c.lineTo(0,s);c.moveTo(-s*0.6,-s*0.1);c.lineTo(s*0.6,-s*0.1);c.stroke();}
+ else if(tile=='T'){c.fillStyle=withHex(col,0.3);c.beginPath();c.rect(-s*0.8,-s*0.1,s*1.6,s*0.9);c.fill();c.stroke();c.beginPath();c.moveTo(-s*0.8,-s*0.1);c.quadraticCurveTo(0,-s*0.85,s*0.8,-s*0.1);c.stroke();c.fillStyle=col;c.beginPath();c.rect(-s*0.12,s*0.05,s*0.24,s*0.3);c.fill();}
+ else if(tile=='F'){for(var i=0;i<4;i++){var a=i*Math.PI/2+0.4;c.beginPath();c.ellipse(Math.cos(a)*s*0.5,Math.sin(a)*s*0.5,s*0.5,s*0.26,a,0,7);c.globalAlpha=0.4;c.fill();c.globalAlpha=1;}c.beginPath();c.arc(0,0,s*0.3,0,7);c.fillStyle='#fff';c.fill();}
+ else if(tile=='O'){c.beginPath();c.ellipse(0,0,s,s*0.62,0,0,7);c.stroke();c.beginPath();c.arc(0,0,s*0.34,0,7);c.fillStyle=col;c.fill();c.beginPath();c.arc(0,0,s*0.14,0,7);c.fillStyle='#000';c.fill();for(var j=0;j<10;j++){var b=j/10*6.283;c.beginPath();c.moveTo(Math.cos(b)*s*1.05,Math.sin(b)*s*0.66);c.lineTo(Math.cos(b)*s*1.35,Math.sin(b)*s*0.85);c.stroke();}}
+ else if(tile=='B'){c.beginPath();c.arc(0,-s*0.1,s*0.7,Math.PI,0);c.lineTo(s*0.42,s*0.4);c.lineTo(-s*0.42,s*0.4);c.closePath();c.globalAlpha=0.25;c.fill();c.globalAlpha=1;c.stroke();c.fillStyle=col;c.beginPath();c.arc(-s*0.28,-s*0.1,s*0.16,0,7);c.fill();c.beginPath();c.arc(s*0.28,-s*0.1,s*0.16,0,7);c.fill();c.beginPath();c.moveTo(-s*0.1,s*0.05);c.lineTo(0,s*0.25);c.lineTo(s*0.1,s*0.05);c.fill();}
+ else if(tile=='W'){c.beginPath();c.moveTo(-s*0.5,-s*0.2);c.lineTo(-s*0.62,-s*0.85);c.lineTo(-s*0.2,-s*0.5);c.lineTo(s*0.2,-s*0.5);c.lineTo(s*0.62,-s*0.85);c.lineTo(s*0.5,-s*0.2);c.lineTo(s*0.32,s*0.4);c.lineTo(0,s*0.85);c.lineTo(-s*0.32,s*0.4);c.closePath();c.globalAlpha=0.3;c.fill();c.globalAlpha=1;c.stroke();c.fillStyle=col;c.beginPath();c.arc(-s*0.22,-s*0.1,s*0.08,0,7);c.fill();c.beginPath();c.arc(s*0.22,-s*0.1,s*0.08,0,7);c.fill();}
+ else if(tile=='N'){c.beginPath();c.arc(0,-s*0.45,s*0.3,0,7);c.stroke();c.beginPath();c.moveTo(-s*0.55,s*0.7);c.quadraticCurveTo(0,-s*0.1,s*0.55,s*0.7);c.closePath();c.globalAlpha=0.3;c.fill();c.globalAlpha=1;c.stroke();}
+ else if(tile=='X'){c.beginPath();c.moveTo(-s*0.7,s*0.7);c.lineTo(-s*0.7,-s*0.2);c.quadraticCurveTo(0,-s*1.0,s*0.7,-s*0.2);c.lineTo(s*0.7,s*0.7);c.stroke();c.globalAlpha=0.25;c.beginPath();c.moveTo(-s*0.45,s*0.7);c.lineTo(-s*0.45,-s*0.1);c.quadraticCurveTo(0,-s*0.7,s*0.45,-s*0.1);c.lineTo(s*0.45,s*0.7);c.closePath();c.fill();c.globalAlpha=1;}
+ else if(tile=='S'){c.beginPath();c.moveTo(-s*0.4,s*0.7);c.lineTo(-s*0.4,-s*0.7);c.stroke();c.beginPath();c.moveTo(-s*0.4,-s*0.7);c.lineTo(s*0.5,-s*0.45);c.lineTo(-s*0.4,-s*0.2);c.closePath();c.globalAlpha=0.4;c.fill();c.globalAlpha=1;c.stroke();}
+}
+
+function spriteCat(name){var n=(name||'').toLowerCase();
+ if(/nightmare/.test(n))return 'nightmare';
+ if(/queen/.test(n))return 'queen';
+ if(/wolf|lupan|dire/.test(n))return 'wolf';
+ if(/thrasher/.test(n))return 'thrasher';
+ if(/spider/.test(n))return 'spider';
+ if(/fairy/.test(n))return 'fairy';
+ if(/dragon|dragadar/.test(n))return 'dragon';
+ if(/elemental/.test(n))return 'elemental';
+ if(/biometal|metal|robot|machine/.test(n))return 'biometal';
+ if(/deathman|death/.test(n))return 'death';
+ if(/spirit|ghost/.test(n))return 'spirit';
+ if(/cloud/.test(n))return 'cloud';
+ if(/apoterex|smoke|gas/.test(n))return 'apoterex';
+ if(/water|zipper|squid|hydro/.test(n))return 'water';
+ return null}
+
+const SPR={
+ blob:function(c,s,col,theme,name){var hh=hsh(name||'x'),sides=5+hh%5,i;c.beginPath();for(i=0;i<sides;i++){var a=i*Math.PI*2/sides+t*0.01,r=s*(0.55+((hh>>i)&7)/22);c[i?'lineTo':'moveTo'](Math.cos(a)*r,Math.sin(a)*r*0.8)}c.closePath();c.fill();c.stroke();c.fillStyle=theme;for(i=0;i<2+(hh%3);i++){c.beginPath();c.arc((i-1)*s*0.2,-s*0.1,s*0.06,0,7);c.fill()}},
+ npc:function(c,s,col,theme){c.beginPath();c.moveTo(-s*0.6,s);c.quadraticCurveTo(-s*0.72,-s*0.2,0,-s*0.85);c.quadraticCurveTo(s*0.72,-s*0.2,s*0.6,s);c.closePath();c.fill();c.stroke();c.fillStyle='#000';c.beginPath();c.ellipse(0,-s*0.35,s*0.34,s*0.42,0,0,7);c.fill();c.fillStyle=col;c.beginPath();c.arc(-s*0.12,-s*0.4,s*0.06,0,7);c.fill();c.beginPath();c.arc(s*0.12,-s*0.4,s*0.06,0,7);c.fill()},
+ wolf:function(c,s,col){c.beginPath();c.moveTo(-s*0.6,-s*0.15);c.lineTo(-s*0.78,-s*0.95);c.lineTo(-s*0.26,-s*0.55);c.lineTo(s*0.26,-s*0.55);c.lineTo(s*0.78,-s*0.95);c.lineTo(s*0.6,-s*0.15);c.lineTo(s*0.4,s*0.5);c.lineTo(0,s*0.95);c.lineTo(-s*0.4,s*0.5);c.closePath();c.fill();c.stroke();c.fillStyle=col;c.beginPath();c.arc(-s*0.26,-s*0.12,s*0.1,0,7);c.fill();c.beginPath();c.arc(s*0.26,-s*0.12,s*0.1,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(0,s*0.55,s*0.06,0,7);c.fill()},
+ queen:function(c,s,col){var i,sgn;c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);for(i=0;i<3;i++){var yy=-s*0.1+i*s*0.28;for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(sgn*s*0.5,yy);c.lineTo(sgn*s*1.1,yy-s*0.15);c.lineTo(sgn*s*1.35,yy+s*0.25);c.stroke()}}c.beginPath();c.ellipse(0,s*0.45,s*0.6,s*0.78,0,0,7);c.fill();c.stroke();c.beginPath();c.ellipse(0,-s*0.25,s*0.5,s*0.45,0,0,7);c.fill();c.stroke();c.strokeStyle=withHex(col,0.6);for(i=1;i<4;i++){c.beginPath();c.ellipse(0,s*0.45,s*0.6*(1-i*0.2),s*0.78*(1-i*0.18),0,0,7);c.stroke()}c.strokeStyle=col;c.fillStyle='rgba(40,2,10,0.9)';c.beginPath();c.arc(0,-s*0.72,s*0.34,0,7);c.fill();c.stroke();for(i=-2;i<=2;i++){c.beginPath();c.moveTo(i*s*0.14,-s*0.97);c.lineTo(i*s*0.16,-s*1.4);c.stroke()}c.beginPath();c.moveTo(-s*0.2,-s*0.57);c.quadraticCurveTo(-s*0.55,-s*0.3,-s*0.15,-s*0.18);c.stroke();c.beginPath();c.moveTo(s*0.2,-s*0.57);c.quadraticCurveTo(s*0.55,-s*0.3,s*0.15,-s*0.18);c.stroke();c.fillStyle='#fff';c.beginPath();c.arc(-s*0.13,-s*0.74,s*0.07,0,7);c.fill();c.beginPath();c.arc(s*0.13,-s*0.74,s*0.07,0,7);c.fill()},
+ thrasher:function(c,s,col){var i,sgn;c.beginPath();c.ellipse(0,s*0.2,s*0.5,s*0.7,0,0,7);c.fill();c.stroke();c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);for(i=0;i<2;i++){var yy=i*s*0.4;for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(sgn*s*0.4,yy);c.lineTo(sgn*s*1.0,yy-s*0.1);c.lineTo(sgn*s*1.2,yy+s*0.2);c.stroke()}}c.fillStyle='rgba(40,2,10,0.9)';c.beginPath();c.arc(0,-s*0.5,s*0.3,0,7);c.fill();c.stroke();c.beginPath();c.moveTo(-s*0.18,-s*0.4);c.quadraticCurveTo(-s*0.45,-s*0.2,-s*0.12,-s*0.1);c.stroke();c.beginPath();c.moveTo(s*0.18,-s*0.4);c.quadraticCurveTo(s*0.45,-s*0.2,s*0.12,-s*0.1);c.stroke();c.fillStyle='#fff';c.beginPath();c.arc(-s*0.11,-s*0.52,s*0.06,0,7);c.fill();c.beginPath();c.arc(s*0.11,-s*0.52,s*0.06,0,7);c.fill()},
+ spider:function(c,s,col){var i,sgn;c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.045);for(i=0;i<4;i++){var yy=-s*0.2+i*s*0.16;for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(0,yy);c.lineTo(sgn*s*0.8,yy-s*0.2);c.lineTo(sgn*s*1.2,yy+s*0.25);c.stroke()}}c.beginPath();c.arc(0,0,s*0.42,0,7);c.fill();c.stroke();c.beginPath();c.arc(0,-s*0.5,s*0.24,0,7);c.fill();c.stroke();c.fillStyle='#ff3355';c.beginPath();c.arc(-s*0.1,-s*0.52,s*0.05,0,7);c.fill();c.beginPath();c.arc(s*0.1,-s*0.52,s*0.05,0,7);c.fill()},
+ fairy:function(c,s,col){var i;c.save();c.globalCompositeOperation='lighter';for(i=0;i<4;i++){var a=i*Math.PI/2+0.4+t*0.02;c.beginPath();c.ellipse(Math.cos(a)*s*0.5,Math.sin(a)*s*0.5,s*0.6,s*0.3,a,0,7);c.fillStyle=withHex(col,0.4);c.fill()}c.restore();c.fillStyle='#fff';c.beginPath();c.arc(0,0,s*0.28,0,7);c.fill();c.fillStyle=col;c.beginPath();c.arc(0,0,s*0.16,0,7);c.fill();for(i=0;i<6;i++){var a2=t*0.04+i;c.fillStyle=withHex(col,0.6);c.beginPath();c.arc(Math.cos(a2)*s*0.9,Math.sin(a2)*s*0.7,s*0.04,0,7);c.fill()}},
+ dragon:function(c,s,col){var sgn;c.fillStyle=withHex(col,0.22);for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(sgn*s*0.2,-s*0.2);c.quadraticCurveTo(sgn*s*1.3,-s*0.7,sgn*s*1.2,s*0.3);c.quadraticCurveTo(sgn*s*0.7,0,sgn*s*0.2,s*0.2);c.closePath();c.fill();c.stroke()}c.fillStyle='rgba(40,2,10,0.85)';c.beginPath();c.ellipse(0,s*0.4,s*0.34,s*0.6,0,0,7);c.fill();c.stroke();c.save();c.translate(-s*0.1,-s*0.55);c.beginPath();c.moveTo(-s*0.5,0);c.lineTo(s*0.25,-s*0.18);c.lineTo(s*0.3,s*0.2);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(0,-s*0.18);c.lineTo(s*0.15,-s*0.5);c.moveTo(s*0.2,-s*0.14);c.lineTo(s*0.4,-s*0.45);c.stroke();c.fillStyle='#ffdc63';c.beginPath();c.arc(-s*0.2,0,s*0.06,0,7);c.fill();c.restore()},
+ elemental:function(c,s,col){var i;c.save();c.rotate(t*0.02);c.beginPath();c.moveTo(0,-s);c.quadraticCurveTo(s*0.7,0,0,s);c.quadraticCurveTo(-s*0.7,0,0,-s);c.closePath();c.fillStyle=withHex(col,0.3);c.fill();c.stroke();c.restore();c.save();c.globalCompositeOperation='lighter';for(i=0;i<3;i++){var a=t*0.04+i*2.1,rr=s*(0.7+0.2*Math.sin(t*0.05+i));c.fillStyle=withHex(col,0.5);c.beginPath();c.arc(Math.cos(a)*rr,Math.sin(a)*rr*0.7,s*0.08,0,7);c.fill()}c.restore();c.fillStyle='#fff';c.beginPath();c.arc(0,0,s*0.16,0,7);c.fill()},
+ biometal:function(c,s,col){var i;c.fillStyle='rgba(20,20,24,0.9)';c.beginPath();c.rect(-s*0.5,-s*0.5,s,s*1.2);c.fill();c.stroke();c.strokeStyle=withHex(col,0.5);for(i=1;i<4;i++){c.beginPath();c.moveTo(-s*0.5,-s*0.5+i*s*0.3);c.lineTo(s*0.5,-s*0.5+i*s*0.3);c.stroke()}c.strokeStyle=col;c.lineWidth=Math.max(3,s*0.08);c.beginPath();c.moveTo(-s*0.5,-s*0.2);c.lineTo(-s*0.95,s*0.1);c.moveTo(s*0.5,-s*0.2);c.lineTo(s*0.95,s*0.1);c.stroke();c.fillStyle='#ff3355';c.beginPath();c.arc(0,-s*0.2,s*0.12,0,7);c.fill()},
+ death:function(c,s,col){c.fillStyle='rgba(8,8,10,0.92)';c.beginPath();c.moveTo(-s*0.55,s);c.quadraticCurveTo(-s*0.6,-s*0.4,0,-s*0.95);c.quadraticCurveTo(s*0.6,-s*0.4,s*0.55,s);c.closePath();c.fill();c.stroke();c.fillStyle='#e8e8e8';c.beginPath();c.arc(0,-s*0.5,s*0.26,0,7);c.fill();c.fillStyle='#000';c.beginPath();c.arc(-s*0.1,-s*0.52,s*0.07,0,7);c.fill();c.beginPath();c.arc(s*0.1,-s*0.52,s*0.07,0,7);c.fill();c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);c.beginPath();c.moveTo(s*0.5,-s*0.9);c.lineTo(s*0.5,s*0.8);c.stroke();c.beginPath();c.moveTo(s*0.5,-s*0.9);c.quadraticCurveTo(s*1.1,-s*0.8,s*0.95,-s*0.3);c.stroke()},
+ spirit:function(c,s,col){c.fillStyle=withHex(col,0.4);c.beginPath();c.moveTo(-s*0.55,s*0.9);c.lineTo(-s*0.55,-s*0.2);c.quadraticCurveTo(0,-s*1.0,s*0.55,-s*0.2);c.lineTo(s*0.55,s*0.9);c.quadraticCurveTo(s*0.3,s*0.65,s*0.1,s*0.9);c.quadraticCurveTo(-s*0.1,s*0.65,-s*0.3,s*0.9);c.quadraticCurveTo(-s*0.45,s*0.7,-s*0.55,s*0.9);c.closePath();c.fill();c.stroke();c.fillStyle='#001a22';c.beginPath();c.arc(-s*0.18,-s*0.35,s*0.1,0,7);c.fill();c.beginPath();c.arc(s*0.18,-s*0.35,s*0.1,0,7);c.fill()},
+ cloud:function(c,s,col){c.fillStyle=withHex(col,0.32);c.beginPath();c.arc(-s*0.4,0,s*0.4,0,7);c.arc(0,-s*0.2,s*0.5,0,7);c.arc(s*0.4,0,s*0.42,0,7);c.arc(0,s*0.2,s*0.46,0,7);c.fill();c.stroke();c.fillStyle='#fff';c.beginPath();c.arc(-s*0.15,-s*0.05,s*0.07,0,7);c.fill();c.beginPath();c.arc(s*0.15,-s*0.05,s*0.07,0,7);c.fill();c.strokeStyle='#ffdc63';c.lineWidth=Math.max(2,s*0.05);c.beginPath();c.moveTo(0,s*0.2);c.lineTo(-s*0.12,s*0.55);c.lineTo(s*0.05,s*0.55);c.lineTo(-s*0.08,s*0.9);c.stroke()},
+ apoterex:function(c,s,col){var sgn,i;c.fillStyle=withHex(col,0.22);for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(0,-s*0.1);c.quadraticCurveTo(sgn*s*1.1,-s*0.5,sgn*s*1.0,s*0.4);c.quadraticCurveTo(sgn*s*0.4,0,0,s*0.2);c.closePath();c.fill();c.stroke()}c.fillStyle='rgba(30,30,20,0.85)';c.beginPath();c.ellipse(0,s*0.1,s*0.3,s*0.5,0,0,7);c.fill();c.stroke();c.fillStyle=col;c.beginPath();c.arc(0,-s*0.3,s*0.16,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';for(i=0;i<5;i++){var a=t*0.05+i;c.fillStyle=withHex(col,0.4);c.beginPath();c.arc(Math.cos(a)*s*0.6,s*0.6+Math.sin(a)*s*0.2,s*0.07,0,7);c.fill()}c.restore()},
+ water:function(c,s,col){var i,n=6;c.strokeStyle=col;c.lineWidth=Math.max(3,s*0.1);c.beginPath();c.moveTo(-s*0.9,-s*0.4);for(i=0;i<=n;i++){var x=-s*0.9+s*1.8*i/n,y=(i%2?1:-1)*s*0.4*(1-i/n)+s*0.2;c.lineTo(x,y)}c.stroke();c.fillStyle='#fff';c.beginPath();c.arc(s*0.7,s*0.2,s*0.1,0,7);c.fill();c.fillStyle='#001a22';c.beginPath();c.arc(s*0.74,s*0.18,s*0.04,0,7);c.fill()},
+ nightmare:function(c,s,col){var i;c.save();c.globalCompositeOperation='lighter';var g=c.createRadialGradient(0,0,0,0,0,s*1.4);g.addColorStop(0,withHex(col,0.35));g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(0,0,s*1.4,0,7);c.fill();c.restore();c.strokeStyle=col;c.lineWidth=Math.max(3,s*0.08);c.beginPath();c.moveTo(0,-s*0.2);c.lineTo(0,s*1.1);c.stroke();c.fillStyle='rgba(20,6,28,0.92)';c.beginPath();c.arc(0,-s*0.45,s*0.5,Math.PI,0);c.lineTo(s*0.3,0);c.lineTo(-s*0.3,0);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(-s*0.45,-s*0.7);c.quadraticCurveTo(-s*0.9,-s*1.1,-s*0.5,-s*1.3);c.stroke();c.beginPath();c.moveTo(s*0.45,-s*0.7);c.quadraticCurveTo(s*0.9,-s*1.1,s*0.5,-s*1.3);c.stroke();c.fillStyle='#ff3355';c.beginPath();c.arc(-s*0.2,-s*0.45,s*0.11,0,7);c.fill();c.beginPath();c.arc(s*0.2,-s*0.45,s*0.11,0,7);c.fill();c.fillStyle=withHex(col,0.5);for(i=-2;i<=2;i++){var x=i*s*0.22;c.beginPath();c.moveTo(x-s*0.05,0);c.quadraticCurveTo(x,s*0.5+Math.sin(t*0.1+i)*s*0.1,x+s*0.05,0);c.closePath();c.fill()}}
+};
+
+const LOOKS=['The wall is old concrete poured over impossible geometry.','The dungeon smells like rain falling on warm electronics.','A small sigil flickers on the stone: here, language becomes action.','The floor remembers Old Earth and New Earth in the same breath.','Something moves just past the edge of the field of view, and waits.','Thin Gold dust glitters in the mortar like money that learned to dream.','A draft carries a voice that is almost a word, then is not.','Scratches on the wall count days no living hand could have counted.','Your shadow arrives a half-second after you do.','The nuclear twilight leaks through a crack as a thin violet line.','A dead screen set in the wall shows your party for an instant, then static.','The silence here has a shape, and the shape is listening.'];
+
+const BANTER={'Zelio':['"Mind your words in here," Zelio warns. "Spoken right, a sentence is a spell."','Zelio studies the air. "The weave is thin. Magic answers fast — and so does whatever is listening."'],'Iron Jack':['Iron Jack raps the wall with a knuckle. "Concrete over something older. Give me an hour and I will build a door out of it."','"Treat the machines nice," Iron Jack mutters, "and they treat you nice. Mostly."'],'Moon Wolf':['Moon Wolf lifts his head. "Something denned here once. Long gone. The fear it left behind is not."','Moon Wolf bares his teeth at the dark. "I do not hunt for thrones. I hunt to bring everyone home."'],'No-See':['No-See has already counted the corners. "Three exits, one liar among them. I will tell you which when it matters."','"Nobody sees me coming," No-See says, from somewhere you were not looking. "That includes the Queen."'],'_default':['One of the party murmurs that the walls feel thinner here.','Someone in the party checks their gear and says nothing.']};
+
+Object.assign(ITEM,{
+ 'Bone Charm':{slot:'charm',will:1,def:1,icon:'\u271B'},
+ 'Hypno Lens':{slot:'relic',will:2,pp:3,icon:'\u25CE'},
+ 'Storm Feather':{slot:'charm',spd:1,mag:1,icon:'\u2726'},
+ 'Zelio Focus':{slot:'relic',mag:3,pp:4,icon:'\u2734'},
+ 'Shadow Veil':{slot:'charm',spd:2,def:1,icon:'\u25D0'},
+ 'Will Knot':{slot:'relic',will:3,icon:'\u221E'},
+ 'Beast Fang':{slot:'charm',atk:2,icon:'\u2723'}
+});
+
+/* bugfix: Queen seal must be earned by defeating her, not by stepping on the tile */
+if(levels[2]&&levels[2].events['13,12'])delete levels[2].events['13,12'].quest;
+
+/* ===== nine new story-beings ===== */
+levels[0].events['5,1']={npc:'Skeleton Keeper',title:'Skeleton Keeper',txt:'A Skeleton stands watch over an ossuary of the old dead, its bones remembering Old Earth better than any book. "The dead are not your enemy," it clicks softly. "Only the one who would not let them rest."',choices:[['Honor the dead',function(s){flag('bone');healParty(14);gain('Bone Charm');say('Skeleton Keeper','It presses a Bone Charm into your palm. The ossuary opens its quiet road, and the dead wish their teeth upon the thing that froze the world.')}],['Force the bone-road',function(s){say('Skeleton Keeper','"Then walk it the hard way, warm-blood."');startBattle('Spirit',false)}],['Ask of the Dragadar',function(s){say('Skeleton Keeper','"He learned our death-secrets and used them to end death itself. A lover of all that dies, so the jailor of all that lives. Pity him — then break him."')}]]};
+levels[0].events['9,3']={npc:'Goblin Scrapwright',title:'Goblin Scrapwright',txt:'A Goblin has bolted a forge out of a truck engine and sewer-glass. Sparks the color of old money fly off the anvil. "Thin Gold buys good steel," it grins, "or I trade a rumor for free."',choices:[['Buy Quazuki Armor (70 Gold)',function(s){if(s.gold<70)return say('Goblin Scrapwright','"Come back when you glitter, soft-skin."');s.gold-=70;gain('Quazuki Armor');flag('goblin');say('Goblin Scrapwright','The Quazuki plate clamps shut with a happy shriek. "Wear it under Mt. Truth and tell them a Goblin made you hard to kill."')}],['Take the free rumor',function(s){say('Goblin Scrapwright','"Down here, technology has a life of its own. Treat machines like beasts and beasts like machines — and never trust a fairy that heals for nothing."')}]]};
+levels[0].events['6,11']={npc:'Underground Hypnotist',title:'Underground Hypnotist',txt:'A Hypnotist sways a sliver of crystal on a wire. "The paranoid and the cautious survive down here," they murmur, "but the calm survive longest. Let me quiet the fear behind your eyes."',choices:[['Accept the trance',function(s){flag('hypno');restorePP(10);gain('Hypno Lens');say('Underground Hypnotist','Your breathing slows. A Hypno Lens settles cool against your brow, and your power points return like a tide.')}],['Refuse, stay sharp',function(s){say('Underground Hypnotist','"Suit yourself. Fear is fuel too — until it is fire."')}]]};
+levels[1].events['5,3']={npc:'Ace of the Cloudways',title:'Ace of the Cloudways',txt:'An Ace leans on a wing of welded lightning, helmet under one arm. "The clouds you walk on can split. The clouds can strike. I ride between the bolts — want a piece of that nerve?"',choices:[['Take the Storm Feather',function(s){flag('ace');gain('Storm Feather');say('Ace of the Cloudways','A Storm Feather pins to your pack. "When the floor turns to weather, you will land on your feet."')}],['Ask about the rifts',function(s){say('Ace of the Cloudways','"Temporal rifts up here. Fog rolls in and the Upper World kisses New Earth. Do not look away when the clouds split — that is when Mt. Truth shows its root."')}]]};
+levels[1].events['11,5']={npc:'Mage of Zelios',title:'Mage of Zelios',txt:'A robed Mage traces a burning sigil that hangs in the air. "The crystals are made in the purity of this place. So are the spells. I can teach the Zelios fire to bite deeper — if your will can hold it."',choices:[['Learn the deeper fire',function(s){flag('zmaster');gain('Zelio Focus');restorePP(8);say('Mage of Zelios','The Zelio Focus burns into your kit. Every blast you cast from here lands heavier — and the Nightmare will feel it.')}],['Ask about purity',function(s){say('Mage of Zelios','"Purity is not safety. The cleanest crystal cuts the deepest. Remember that at the seal."')}]]};
+levels[1].events['5,13']={npc:'Invisibles Spy',title:'Invisibles Spy',txt:'You feel watched before you see anything. An Invisibles agent unblurs from the cloud-floor, a finger to unseen lips. "I map what others cannot. I will trade you the lay of this whole world — for the promise that you saw nothing."',choices:[['Take the map (reveal floor)',function(s){flag('spy');gain('Shadow Veil');var m=level().map,x,y;for(y=0;y<m.length;y++)for(x=0;x<m[y].length;x++)S.visited[S.l+','+x+','+y]=1;say('Invisibles Spy','The whole floor prints itself behind your eyes. A Shadow Veil settles over your shoulders. "We were never here."')}],['Decline the offer',function(s){say('Invisibles Spy','"Then walk it blind. Braver. Stupider."')}]]};
+levels[2].events['4,3']={npc:'Monk of the Will',title:'Monk of the Will',txt:'A Monk sits in the path, eyes closed, utterly unbothered by the trembling mountain. "Mt. Truth is not a mountain. It is where rule, story, and will agree. Sit. Tie the knot of your own will — or walk on."',choices:[['Sit and tie the knot',function(s){flag('monk');gain('Will Knot');say('Monk of the Will','When you open your eyes a Will Knot rests in your hand. The Nightmare strikes softer at those who own themselves.')}],['Ask what waits at the end',function(s){say('Monk of the Will','"The end is not the boss. The end is what the boss changes in you. Arrive already changed."')}]]};
+levels[2].events['11,5']={npc:'Ninja of the Seal',title:'Ninja of the Seal',txt:'A Ninja hangs upside-down from a rib of gold code, watching the far wall where the Queen sleeps. "I have already cut three of her anchor-threads," they whisper. "Help me cut the last and her seal breaks weaker."',choices:[['Cut the last thread',function(s){flag('ninja');s.gold+=30;say('Ninja of the Seal','You steady the line while the blade does its quiet work. "When she comes through the wall, she comes through wounded." Thin Gold changes hands as thanks.')}],['Leave the threads be',function(s){say('Ninja of the Seal','"Then she meets you whole. Your funeral, your choice."')}]]};
+levels[2].events['9,11']={npc:'Beast Master',title:'Beast Master',txt:'A Beast Master kneels with a half-tamed thing of teeth and shadow at heel. "Everything in MindScape can be a familiar or a foe. This one fears the Queen. Take its fang and it will gnaw at her from the dark."',choices:[['Accept the Beast Fang',function(s){flag('beast');gain('Beast Fang');say('Beast Master','The Beast Fang ties to your belt, warm and restless. When the Queen Thrasher rears up, she strikes a little weaker for fear of the dark.')}],['Ask about familiars',function(s){say('Beast Master','"Treat beasts like machines and machines like beasts. Down here both bite. Up here both fly. At Mt. Truth, both kneel."')}]]};
+
+
+/* ---- progression fixes & helpers ---- */
+if(levels[0].events['13,13']){levels[0].events['12,13']=levels[0].events['13,13'];delete levels[0].events['13,13'];}
+levels[0]._obj='Speak with the Oracle (\u25C7), accept the rule of will, then reach the \u25BC stair.';
+levels[1]._obj='Find the Oracle of Weather, take the omen, then cross to the \u25BC bridge.';
+levels[2]._obj='Gather the seals, defeat the Queen at \u25B2 B, then reach the \u25BC Final Seal.';
+var NEEDHINT={oracle:'The rift is sealed. Find the Oracle (\u25C7 on the map) and accept the rule of will.',weather:'The bridge sleeps. Find the Oracle of Weather and receive the omen, then return.',queen:'Defeat the Queen Thrasher to claim her seal first.'};
+function levelIntro(){try{var L=levels[S.l];log('<b style="color:#ffdc63">\u25A3 Entering '+L.name+'</b>'+(L._obj?(' \u2014 '+L._obj):''));}catch(e){}}
+function reconcileNpcs(){try{if(!S||!S.npcGone)return;for(var k in S.npcGone){var p=k.split(',');var l=+p[0],ek=p[1]+','+p[2];if(levels[l]&&levels[l].events[ek])delete levels[l].events[ek]}}catch(e){}}
+
+/* --- completability: the first seal is also findable on the final floor --- */
+levels[2].events['3,3']={title:'Collects Crystal',txt:'A Collects Crystal hums in the gold air of Mt. Truth \u2014 the will-key the seals demand. Whatever was left behind below, the rule lets you hold it now.',item:'Collects Crystal',quest:'crystal'};
+
+/* --- align decorative map markers to their real event tiles; delete phantom markers --- */
+(function(){levels.forEach(function(L){var rows=L.map.map(function(r){return r.split('')}),y,x,k;
+ for(y=0;y<rows.length;y++)for(x=0;x<rows[y].length;x++){var c=rows[y][x];if('CTFOXBNW'.indexOf(c)>=0&&!L.events[x+','+y])rows[y][x]='.';}
+ for(k in L.events){var p=k.split(','),ex=+p[0],ey=+p[1],ev=L.events[k];if(!rows[ey]||rows[ey][ex]===undefined||rows[ey][ex]=='#'||rows[ey][ex]=='S')continue;
+  if(ev.npc||ev.battle||ev.stairs!=null||ev.win){if('CTFOXBNW'.indexOf(rows[ey][ex])>=0)rows[ey][ex]='.';continue}
+  if(ev.item||ev.gold||ev.quest){rows[ey][ex]=(ev.quest=='crystal'||/crystal/i.test(ev.item||''))?'C':'T';}
+ }
+ L.map=rows.map(function(r){return r.join('')});
+});})();
+/* upgraded dungeon-character billboards (override the plainer ones) */
+function _vg(c,x0,y0,x1,y1,st){var g=c.createLinearGradient(x0,y0,x1,y1);st.forEach(function(s){g.addColorStop(s[0],s[1])});return g}
+function _rg(c,x,y,r,st){var g=c.createRadialGradient(x,y,0,x,y,r);st.forEach(function(s){g.addColorStop(s[0],s[1])});return g}
+SPR.npc=function(c,s,col,theme){
+ c.fillStyle=_vg(c,0,-s*0.95,0,s,[[0,withHex(col,0.34)],[0.34,'rgba(32,23,6,0.93)'],[1,'rgba(10,8,2,0.96)']]);
+ c.beginPath();c.moveTo(-s*0.62,s);c.quadraticCurveTo(-s*0.8,-s*0.26,-s*0.32,-s*0.72);c.quadraticCurveTo(0,-s*1.0,s*0.32,-s*0.72);c.quadraticCurveTo(s*0.8,-s*0.26,s*0.62,s);c.quadraticCurveTo(s*0.3,s*0.86,0,s);c.quadraticCurveTo(-s*0.3,s*0.86,-s*0.62,s);c.closePath();c.fill();c.stroke();
+ c.save();c.globalAlpha=0.45;c.strokeStyle='rgba(0,0,0,0.6)';c.lineWidth=s*0.03;c.beginPath();c.moveTo(-s*0.16,-s*0.35);c.lineTo(-s*0.26,s*0.86);c.moveTo(s*0.16,-s*0.35);c.lineTo(s*0.26,s*0.86);c.moveTo(0,-s*0.45);c.lineTo(0,s*0.92);c.stroke();c.restore();
+ c.fillStyle='rgba(4,3,1,0.96)';c.beginPath();c.ellipse(0,-s*0.46,s*0.3,s*0.4,0,0,7);c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_rg(c,0,-s*0.43,s*0.36,[[0,withHex(col,0.5)],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,-s*0.43,s*0.36,0,7);c.fill();c.restore();
+ c.fillStyle='#fff';c.beginPath();c.arc(-s*0.11,-s*0.47,s*0.055,0,7);c.fill();c.beginPath();c.arc(s*0.11,-s*0.47,s*0.055,0,7);c.fill();
+ c.fillStyle=col;c.beginPath();c.arc(-s*0.11,-s*0.47,s*0.028,0,7);c.fill();c.beginPath();c.arc(s*0.11,-s*0.47,s*0.028,0,7);c.fill();
+ c.strokeStyle=withHex(col,0.75);c.lineWidth=s*0.035;c.beginPath();c.moveTo(-s*0.3,-s*0.5);c.quadraticCurveTo(0,-s*0.98,s*0.3,-s*0.5);c.stroke()};
+SPR.wolf=function(c,s,col){
+ c.fillStyle=_vg(c,0,-s*0.9,0,s,[[0,'rgba(154,164,176,0.96)'],[0.5,'rgba(98,106,118,0.96)'],[1,'rgba(40,46,54,0.96)']]);c.strokeStyle=col;
+ c.beginPath();c.moveTo(-s*0.55,-s*0.2);c.lineTo(-s*0.74,-s*0.92);c.lineTo(-s*0.3,-s*0.55);c.lineTo(-s*0.16,-s*0.66);c.lineTo(0,-s*0.5);c.lineTo(s*0.16,-s*0.66);c.lineTo(s*0.3,-s*0.55);c.lineTo(s*0.74,-s*0.92);c.lineTo(s*0.55,-s*0.2);c.lineTo(s*0.5,s*0.5);c.lineTo(0,s*0.92);c.lineTo(-s*0.5,s*0.5);c.closePath();c.fill();c.stroke();
+ c.fillStyle='rgba(28,32,38,0.96)';c.beginPath();c.moveTo(-s*0.13,s*0.08);c.lineTo(0,s*0.52);c.lineTo(s*0.13,s*0.08);c.closePath();c.fill();
+ c.fillStyle='#0c0c0e';c.beginPath();c.arc(0,s*0.5,s*0.06,0,7);c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.95);c.beginPath();c.ellipse(-s*0.24,-s*0.1,s*0.1,s*0.07,-0.3,0,7);c.fill();c.beginPath();c.ellipse(s*0.24,-s*0.1,s*0.1,s*0.07,0.3,0,7);c.fill();c.restore();
+ c.fillStyle='#1a1200';c.beginPath();c.ellipse(-s*0.24,-s*0.1,s*0.028,s*0.06,0,0,7);c.fill();c.beginPath();c.ellipse(s*0.24,-s*0.1,s*0.028,s*0.06,0,0,7);c.fill();
+ c.strokeStyle='rgba(255,255,255,0.4)';c.lineWidth=s*0.02;c.beginPath();c.moveTo(-s*0.4,-s*0.4);c.lineTo(-s*0.2,-s*0.2);c.moveTo(s*0.4,-s*0.4);c.lineTo(s*0.2,-s*0.2);c.stroke()};
+SPR.spider=function(c,s,col){
+ c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);
+ for(var i=0;i<4;i++){var yy=-s*0.18+i*s*0.14;for(var sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(0,yy);c.quadraticCurveTo(sgn*s*0.9,yy-s*0.3,sgn*s*1.25,yy+s*0.28);c.stroke()}}
+ c.fillStyle=_rg(c,0,s*0.05,s*0.5,[[0,'rgba(74,9,22,0.96)'],[1,'rgba(18,2,8,0.96)']]);c.beginPath();c.ellipse(0,s*0.1,s*0.46,s*0.5,0,0,7);c.fill();c.stroke();
+ c.fillStyle=_rg(c,0,-s*0.5,s*0.3,[[0,'rgba(94,13,28,0.96)'],[1,'rgba(28,4,10,0.96)']]);c.beginPath();c.arc(0,-s*0.45,s*0.26,0,7);c.fill();c.stroke();
+ c.strokeStyle=withHex(col,0.6);c.lineWidth=s*0.04;c.beginPath();c.moveTo(0,-s*0.18);c.lineTo(0,s*0.5);c.moveTo(-s*0.14,-s*0.05);c.lineTo(s*0.14,-s*0.05);c.moveTo(-s*0.17,s*0.22);c.lineTo(s*0.17,s*0.22);c.stroke();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle='#ff5577';[[-0.12,-0.52],[0.12,-0.52],[-0.06,-0.43],[0.06,-0.43]].forEach(function(e){c.beginPath();c.arc(e[0]*s,e[1]*s,s*0.038,0,7);c.fill()});c.restore();
+ c.strokeStyle='#fff';c.lineWidth=s*0.03;c.beginPath();c.moveTo(-s*0.08,-s*0.24);c.lineTo(-s*0.05,-s*0.12);c.moveTo(s*0.08,-s*0.24);c.lineTo(s*0.05,-s*0.12);c.stroke()};
+SPR.spirit=function(c,s,col){
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_vg(c,0,-s,0,s,[[0,withHex(col,0.5)],[1,withHex(col,0.07)]]);
+ c.beginPath();c.moveTo(-s*0.55,s*0.9);c.lineTo(-s*0.55,-s*0.2);c.quadraticCurveTo(0,-s*1.05,s*0.55,-s*0.2);c.lineTo(s*0.55,s*0.9);c.quadraticCurveTo(s*0.32,s*0.62,s*0.12,s*0.9);c.quadraticCurveTo(-s*0.06,s*0.62,-s*0.22,s*0.9);c.quadraticCurveTo(-s*0.4,s*0.66,-s*0.55,s*0.9);c.closePath();c.fill();c.restore();c.stroke();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_rg(c,0,-s*0.3,s*0.42,[[0,withHex(col,0.4)],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,-s*0.3,s*0.42,0,7);c.fill();c.restore();
+ c.fillStyle='#001a22';c.beginPath();c.ellipse(-s*0.16,-s*0.35,s*0.08,s*0.12,0,0,7);c.fill();c.beginPath();c.ellipse(s*0.16,-s*0.35,s*0.08,s*0.12,0,0,7);c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.85);c.beginPath();c.arc(-s*0.16,-s*0.38,s*0.03,0,7);c.fill();c.beginPath();c.arc(s*0.16,-s*0.38,s*0.03,0,7);c.fill();c.restore()};
+SPR.dragon=function(c,s,col){
+ for(var sgn=-1;sgn<=1;sgn+=2){c.fillStyle=withHex(col,0.26);c.beginPath();c.moveTo(sgn*s*0.2,-s*0.2);c.quadraticCurveTo(sgn*s*1.35,-s*0.75,sgn*s*1.2,s*0.35);c.quadraticCurveTo(sgn*s*0.7,0,sgn*s*0.2,s*0.2);c.closePath();c.fill();c.stroke();c.strokeStyle=withHex(col,0.5);c.lineWidth=s*0.025;c.beginPath();c.moveTo(sgn*s*0.25,-s*0.1);c.lineTo(sgn*s*1.1,-s*0.42);c.moveTo(sgn*s*0.3,0);c.lineTo(sgn*s*1.12,s*0.05);c.stroke();c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.03)}
+ c.fillStyle=_vg(c,0,-s*0.2,0,s,[[0,'rgba(82,17,32,0.96)'],[1,'rgba(24,4,10,0.96)']]);c.beginPath();c.ellipse(0,s*0.4,s*0.34,s*0.62,0,0,7);c.fill();c.stroke();
+ c.strokeStyle=withHex(col,0.4);c.lineWidth=s*0.03;for(var i=0;i<3;i++){c.beginPath();c.moveTo(-s*0.16,s*0.1+i*s*0.22);c.lineTo(s*0.16,s*0.1+i*s*0.22);c.stroke()}
+ c.save();c.translate(-s*0.05,-s*0.5);c.fillStyle=_rg(c,0,0,s*0.42,[[0,'rgba(92,19,36,0.97)'],[1,'rgba(30,6,12,0.97)']]);c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.03);c.beginPath();c.moveTo(-s*0.55,0);c.lineTo(s*0.28,-s*0.2);c.lineTo(s*0.32,s*0.22);c.closePath();c.fill();c.stroke();
+ c.beginPath();c.moveTo(s*0.05,-s*0.18);c.lineTo(s*0.2,-s*0.55);c.moveTo(s*0.22,-s*0.12);c.lineTo(s*0.45,-s*0.48);c.stroke();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle='#ffdc63';c.beginPath();c.arc(-s*0.2,-s*0.02,s*0.08,0,7);c.fill();c.restore();c.fillStyle='#3a1a00';c.beginPath();c.ellipse(-s*0.2,-s*0.02,s*0.028,s*0.06,0,0,7);c.fill();c.restore()};
+SPR.blob=function(c,s,col,theme,name){var hh=hsh(name||'x'),sides=6+hh%4,i;
+ c.fillStyle=_rg(c,-s*0.1,-s*0.12,s*0.85,[[0,withHex(col,0.5)],[0.6,withHex(theme||col,0.3)],[1,'rgba(8,4,2,0.92)']]);
+ c.beginPath();for(i=0;i<sides;i++){var a=i*Math.PI*2/sides+t*0.01,r=s*(0.55+((hh>>i)&7)/22+0.04*Math.sin(t*0.08+i));c[i?'lineTo':'moveTo'](Math.cos(a)*r,Math.sin(a)*r*0.82)}c.closePath();c.fill();c.stroke();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_rg(c,-s*0.14,-s*0.2,s*0.42,[[0,withHex(col,0.5)],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(-s*0.12,-s*0.18,s*0.42,0,7);c.fill();c.restore();
+ c.fillStyle=theme||col;for(i=0;i<2+(hh%3);i++){c.beginPath();c.arc((i-1)*s*0.22,-s*0.05,s*0.07,0,7);c.fill()}};
+
+/* ===== story-being skins ===== */
+function npcSkin(name){var n=(name||'').toLowerCase();
+ if(/skeleton|bone|dead|ossuary|keeper|warden/.test(n))return 'npc_skel';
+ if(/goblin|scrap|forge|tinker|smith|wright/.test(n))return 'npc_goblin';
+ if(/mage|zelio|oracle|witch|wizard|sorc|hypno|cloud|storm|ace/.test(n))return 'npc_mage';
+ if(/monk|will|sage|seer/.test(n))return 'npc_monk';
+ if(/ninja|spy|invisible|shadow|rogue/.test(n))return 'npc_rogue';
+ if(/merchant|quarter|vell|rustpick|trader|quart/.test(n))return 'npc_merchant';
+ if(/beast|wolf|hunter|fang|tamer|master/.test(n))return 'npc_beast';
+ return 'npc'}
+SPR.npc_skel=function(c,s,col,theme){c.fillStyle=_vg(c,0,-s*0.95,0,s,[[0,'rgba(120,128,120,0.3)'],[0.4,'rgba(26,28,26,0.94)'],[1,'rgba(8,9,8,0.96)']]);c.beginPath();c.moveTo(-s*0.6,s);c.quadraticCurveTo(-s*0.78,-s*0.24,-s*0.3,-s*0.7);c.quadraticCurveTo(0,-s*0.98,s*0.3,-s*0.7);c.quadraticCurveTo(s*0.78,-s*0.24,s*0.6,s);c.quadraticCurveTo(s*0.3,s*0.86,0,s);c.quadraticCurveTo(-s*0.3,s*0.86,-s*0.6,s);c.closePath();c.fill();c.stroke();c.fillStyle='#e8e6dc';c.beginPath();c.arc(0,-s*0.46,s*0.26,Math.PI,0);c.lineTo(s*0.16,-s*0.2);c.lineTo(s*0.08,-s*0.12);c.lineTo(-s*0.08,-s*0.12);c.lineTo(-s*0.16,-s*0.2);c.closePath();c.fill();c.fillStyle='#0a0a0a';c.beginPath();c.arc(-s*0.1,-s*0.46,s*0.07,0,7);c.fill();c.beginPath();c.arc(s*0.1,-s*0.46,s*0.07,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.8);c.beginPath();c.arc(-s*0.1,-s*0.45,s*0.028,0,7);c.fill();c.beginPath();c.arc(s*0.1,-s*0.45,s*0.028,0,7);c.fill();c.restore();c.fillStyle='#0a0a0a';c.beginPath();c.moveTo(0,-s*0.36);c.lineTo(-s*0.03,-s*0.28);c.lineTo(s*0.03,-s*0.28);c.closePath();c.fill();c.strokeStyle='#0a0a0a';c.lineWidth=s*0.02;for(var i=-2;i<=2;i++){c.beginPath();c.moveTo(i*s*0.04,-s*0.2);c.lineTo(i*s*0.04,-s*0.12);c.stroke()}};
+SPR.npc_goblin=function(c,s,col,theme){c.fillStyle=_vg(c,0,-s*0.5,0,s,[[0,'rgba(60,46,20,0.92)'],[1,'rgba(24,18,8,0.94)']]);c.beginPath();c.moveTo(-s*0.5,s);c.lineTo(-s*0.45,-s*0.1);c.quadraticCurveTo(0,-s*0.35,s*0.45,-s*0.1);c.lineTo(s*0.5,s);c.closePath();c.fill();c.stroke();c.fillStyle=_rg(c,0,-s*0.45,s*0.4,[[0,'rgba(92,199,99,0.96)'],[1,'rgba(36,122,46,0.96)']]);c.beginPath();c.arc(0,-s*0.45,s*0.32,0,7);c.fill();c.stroke();c.fillStyle='#3a8a44';c.beginPath();c.moveTo(-s*0.3,-s*0.5);c.lineTo(-s*0.6,-s*0.62);c.lineTo(-s*0.28,-s*0.32);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(s*0.3,-s*0.5);c.lineTo(s*0.6,-s*0.62);c.lineTo(s*0.28,-s*0.32);c.closePath();c.fill();c.stroke();c.fillStyle='#15150f';c.fillRect(-s*0.26,-s*0.54,s*0.52,s*0.15);c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.7);c.beginPath();c.arc(-s*0.13,-s*0.46,s*0.07,0,7);c.fill();c.beginPath();c.arc(s*0.13,-s*0.46,s*0.07,0,7);c.fill();c.restore();c.strokeStyle='#0c2a12';c.lineWidth=s*0.03;c.beginPath();c.arc(0,-s*0.3,s*0.12,0.1,Math.PI-0.1);c.stroke();c.strokeStyle='#6b4a2a';c.lineWidth=s*0.06;c.beginPath();c.moveTo(s*0.4,s*0.5);c.lineTo(s*0.72,-s*0.2);c.stroke();c.fillStyle='#9a9aa2';c.fillRect(s*0.6,-s*0.36,s*0.26,s*0.18);c.strokeRect(s*0.6,-s*0.36,s*0.26,s*0.18)};
+SPR.npc_mage=function(c,s,col,theme){c.fillStyle=_vg(c,0,-s*1.1,0,s,[[0,withHex(theme,0.4)],[0.4,'rgba(20,26,52,0.94)'],[1,'rgba(8,10,24,0.96)']]);c.beginPath();c.moveTo(-s*0.55,s);c.quadraticCurveTo(-s*0.7,-s*0.3,-s*0.16,-s*0.85);c.lineTo(0,-s*1.15);c.lineTo(s*0.16,-s*0.85);c.quadraticCurveTo(s*0.7,-s*0.3,s*0.55,s);c.quadraticCurveTo(s*0.28,s*0.86,0,s);c.quadraticCurveTo(-s*0.28,s*0.86,-s*0.55,s);c.closePath();c.fill();c.stroke();c.fillStyle='rgba(3,4,10,0.95)';c.beginPath();c.ellipse(0,-s*0.5,s*0.22,s*0.3,0,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.9);c.beginPath();c.arc(-s*0.08,-s*0.5,s*0.04,0,7);c.fill();c.beginPath();c.arc(s*0.08,-s*0.5,s*0.04,0,7);c.fill();c.restore();c.strokeStyle='#6b4a2a';c.lineWidth=s*0.05;c.beginPath();c.moveTo(s*0.5,s);c.lineTo(s*0.42,-s*0.7);c.stroke();c.save();c.globalCompositeOperation='lighter';var og=_rg(c,s*0.4,-s*0.78,s*0.26,[[0,'#fff'],[0.5,withHex(theme,0.85)],[1,'rgba(0,0,0,0)']]);c.fillStyle=og;c.beginPath();c.arc(s*0.4,-s*0.78,s*0.26,0,7);c.fill();c.fillStyle=withHex(theme,0.7);for(var i=0;i<3;i++){var a=t*0.03+i*2.1;c.beginPath();c.arc(Math.cos(a)*s*0.5,-s*0.3+Math.sin(a)*s*0.3,s*0.04,0,7);c.fill()}c.restore()};
+SPR.npc_monk=function(c,s,col,theme){c.save();c.globalCompositeOperation='lighter';var ag=_rg(c,0,-s*0.3,s*0.8,[[0,withHex(col,0.16)],[1,'rgba(0,0,0,0)']]);c.fillStyle=ag;c.beginPath();c.arc(0,-s*0.3,s*0.8,0,7);c.fill();c.restore();c.fillStyle=_vg(c,0,-s*0.6,0,s,[[0,'rgba(180,120,50,0.5)'],[0.4,'rgba(120,70,24,0.92)'],[1,'rgba(60,34,10,0.94)']]);c.beginPath();c.moveTo(-s*0.5,s);c.quadraticCurveTo(-s*0.6,-s*0.2,-s*0.22,-s*0.5);c.quadraticCurveTo(0,-s*0.62,s*0.22,-s*0.5);c.quadraticCurveTo(s*0.6,-s*0.2,s*0.5,s);c.closePath();c.fill();c.stroke();c.fillStyle=_rg(c,0,-s*0.6,s*0.3,[[0,'rgba(230,180,130,0.96)'],[1,'rgba(150,100,60,0.96)']]);c.beginPath();c.arc(0,-s*0.6,s*0.24,0,7);c.fill();c.stroke();c.strokeStyle='#3a2412';c.lineWidth=s*0.025;c.beginPath();c.moveTo(-s*0.13,-s*0.6);c.quadraticCurveTo(-s*0.07,-s*0.55,-s*0.01,-s*0.6);c.moveTo(s*0.01,-s*0.6);c.quadraticCurveTo(s*0.07,-s*0.55,s*0.13,-s*0.6);c.stroke();c.fillStyle='rgba(220,170,120,0.95)';c.beginPath();c.ellipse(0,s*0.12,s*0.12,s*0.26,0,0,7);c.fill();c.stroke()};
+SPR.npc_rogue=function(c,s,col,theme){c.save();c.globalAlpha=0.92;c.fillStyle=_vg(c,0,-s*0.9,0,s,[[0,'rgba(40,50,46,0.5)'],[0.4,'rgba(14,22,20,0.92)'],[1,'rgba(4,8,7,0.95)']]);c.beginPath();c.moveTo(-s*0.5,s);c.quadraticCurveTo(-s*0.7,-s*0.2,-s*0.28,-s*0.72);c.quadraticCurveTo(0,-s*0.96,s*0.28,-s*0.72);c.quadraticCurveTo(s*0.7,-s*0.2,s*0.5,s);c.quadraticCurveTo(s*0.1,s*0.7,0,s);c.quadraticCurveTo(-s*0.1,s*0.7,-s*0.5,s);c.closePath();c.fill();c.stroke();c.restore();c.fillStyle='rgba(2,4,3,0.96)';c.beginPath();c.ellipse(0,-s*0.45,s*0.24,s*0.32,0,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.9);c.beginPath();c.ellipse(-s*0.09,-s*0.46,s*0.06,s*0.03,0,0,7);c.fill();c.beginPath();c.ellipse(s*0.09,-s*0.46,s*0.06,s*0.03,0,0,7);c.fill();c.restore();c.strokeStyle='#cfe8ff';c.lineWidth=s*0.04;c.beginPath();c.moveTo(s*0.34,s*0.2);c.lineTo(s*0.52,-s*0.1);c.stroke()};
+SPR.npc_beast=function(c,s,col,theme){c.fillStyle=_vg(c,0,-s*0.7,0,s,[[0,'rgba(120,90,60,0.5)'],[0.4,'rgba(70,50,30,0.92)'],[1,'rgba(34,24,14,0.94)']]);c.beginPath();c.moveTo(-s*0.58,s);c.quadraticCurveTo(-s*0.72,-s*0.2,-s*0.3,-s*0.55);c.quadraticCurveTo(0,-s*0.7,s*0.3,-s*0.55);c.quadraticCurveTo(s*0.72,-s*0.2,s*0.58,s);c.lineTo(s*0.4,s*0.85);c.lineTo(s*0.2,s);c.lineTo(0,s*0.85);c.lineTo(-s*0.2,s);c.lineTo(-s*0.4,s*0.85);c.closePath();c.fill();c.stroke();c.fillStyle='rgba(40,30,20,0.95)';c.beginPath();c.arc(0,-s*0.5,s*0.24,0,7);c.fill();c.stroke();c.strokeStyle='#d8c8a8';c.lineWidth=s*0.05;c.beginPath();c.moveTo(-s*0.18,-s*0.62);c.quadraticCurveTo(-s*0.42,-s*0.9,-s*0.3,-s*1.05);c.moveTo(s*0.18,-s*0.62);c.quadraticCurveTo(s*0.42,-s*0.9,s*0.3,-s*1.05);c.stroke();c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.9);c.beginPath();c.arc(-s*0.09,-s*0.5,s*0.04,0,7);c.fill();c.beginPath();c.arc(s*0.09,-s*0.5,s*0.04,0,7);c.fill();c.restore();c.fillStyle='rgba(20,16,10,0.9)';c.beginPath();c.ellipse(s*0.5,s*0.82,s*0.18,s*0.1,0,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';c.fillStyle='#ff5577';c.beginPath();c.arc(s*0.62,s*0.79,s*0.022,0,7);c.fill();c.restore()};
+SPR.npc_merchant=function(c,s,col,theme){c.fillStyle='rgba(70,50,26,0.92)';c.beginPath();c.rect(-s*0.62,-s*0.3,s*0.4,s*0.72);c.fill();c.stroke();c.fillStyle=_vg(c,0,-s*0.8,0,s,[[0,withHex(col,0.3)],[0.4,'rgba(44,30,12,0.93)'],[1,'rgba(20,14,6,0.95)']]);c.beginPath();c.moveTo(-s*0.45,s);c.quadraticCurveTo(-s*0.6,-s*0.24,-s*0.26,-s*0.66);c.quadraticCurveTo(0,-s*0.92,s*0.26,-s*0.66);c.quadraticCurveTo(s*0.6,-s*0.24,s*0.45,s);c.closePath();c.fill();c.stroke();c.fillStyle='rgba(4,3,1,0.95)';c.beginPath();c.ellipse(0,-s*0.42,s*0.2,s*0.28,0,0,7);c.fill();c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.85);c.beginPath();c.arc(-s*0.07,-s*0.43,s*0.035,0,7);c.fill();c.beginPath();c.arc(s*0.07,-s*0.43,s*0.035,0,7);c.fill();c.restore();c.strokeStyle='#6b4a2a';c.lineWidth=s*0.03;c.beginPath();c.moveTo(s*0.5,-s*0.2);c.lineTo(s*0.5,s*0.22);c.stroke();c.save();c.globalCompositeOperation='lighter';var lg=_rg(c,s*0.5,s*0.34,s*0.24,[[0,'#ffe9a8'],[1,'rgba(0,0,0,0)']]);c.fillStyle=lg;c.beginPath();c.arc(s*0.5,s*0.34,s*0.24,0,7);c.fill();c.restore();c.strokeStyle='#ffdc63';c.lineWidth=s*0.025;c.strokeRect(s*0.4,s*0.24,s*0.2,s*0.22)};
+function beingPortrait(name){try{var cv=document.createElement('canvas');cv.width=150;cv.height=170;var c=cv.getContext('2d');var bg=c.createRadialGradient(75,60,0,75,60,160);bg.addColorStop(0,'#163a22');bg.addColorStop(1,'#02100a');c.fillStyle=bg;c.fillRect(0,0,150,170);c.save();c.globalCompositeOperation='lighter';var fl=c.createRadialGradient(75,150,0,75,150,90);fl.addColorStop(0,'rgba(120,255,140,0.12)');fl.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=fl;c.fillRect(0,80,150,90);c.restore();c.save();c.translate(75,104);var s=60;c.shadowColor='#ffdc63';c.shadowBlur=13;c.lineWidth=2.3;c.strokeStyle='#ffdc63';c.fillStyle='rgba(28,20,3,0.9)';var sk=npcSkin(name);(SPR[sk]||SPR.npc)(c,s,'#ffdc63','#55ff66');c.restore();c.shadowBlur=0;c.strokeStyle='#ffdc6399';c.lineWidth=1.5;c.strokeRect(2,2,146,166);return '<img alt="" src="'+cv.toDataURL()+'" style="width:100%;display:block;border-radius:10px">'}catch(e){return sigil(name)}}
+
+SPR.queen=function(c,s,col){var i,sgn;
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_rg(c,0,0,s*1.5,[[0,withHex(col,0.18)],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,0,s*1.5,0,7);c.fill();c.restore();
+ c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);for(i=0;i<3;i++){var yy=-s*0.1+i*s*0.3;for(sgn=-1;sgn<=1;sgn+=2){c.beginPath();c.moveTo(sgn*s*0.45,yy);c.quadraticCurveTo(sgn*s*1.05,yy-s*0.2,sgn*s*1.35,yy+s*0.25);c.stroke();c.fillStyle=withHex(col,0.3);c.beginPath();c.moveTo(sgn*s*1.0,yy-s*0.15);c.lineTo(sgn*s*1.4,yy+s*0.22);c.lineTo(sgn*s*1.05,yy+s*0.3);c.closePath();c.fill()}}
+ c.fillStyle=_vg(c,0,-s*0.2,0,s*1.1,[[0,'rgba(92,14,32,0.96)'],[1,'rgba(28,4,12,0.96)']]);c.beginPath();c.ellipse(0,s*0.5,s*0.6,s*0.8,0,0,7);c.fill();c.stroke();
+ c.strokeStyle=withHex(col,0.5);c.lineWidth=s*0.03;for(i=1;i<4;i++){c.beginPath();c.ellipse(0,s*0.5,s*0.6*(1-i*0.2),s*0.8*(1-i*0.16),0,0.6,Math.PI-0.6);c.stroke()}
+ c.fillStyle=_rg(c,0,-s*0.25,s*0.5,[[0,'rgba(112,18,40,0.96)'],[1,'rgba(40,6,16,0.96)']]);c.beginPath();c.ellipse(0,-s*0.25,s*0.5,s*0.45,0,0,7);c.fill();c.stroke();
+ c.fillStyle='rgba(30,4,12,0.96)';c.beginPath();c.arc(0,-s*0.72,s*0.34,0,7);c.fill();c.stroke();
+ c.fillStyle=col;for(i=-2;i<=2;i++){c.beginPath();c.moveTo(i*s*0.14,-s*0.97);c.lineTo(i*s*0.16,-s*1.45);c.lineTo(i*s*0.14+s*0.06,-s*0.97);c.closePath();c.fill()}
+ c.strokeStyle=col;c.lineWidth=s*0.04;c.beginPath();c.moveTo(-s*0.2,-s*0.57);c.quadraticCurveTo(-s*0.55,-s*0.3,-s*0.15,-s*0.18);c.stroke();c.beginPath();c.moveTo(s*0.2,-s*0.57);c.quadraticCurveTo(s*0.55,-s*0.3,s*0.15,-s*0.18);c.stroke();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.9);c.beginPath();c.arc(-s*0.13,-s*0.74,s*0.13,0,7);c.fill();c.beginPath();c.arc(s*0.13,-s*0.74,s*0.13,0,7);c.fill();c.restore();
+ c.fillStyle='#fff';c.beginPath();c.arc(-s*0.13,-s*0.74,s*0.055,0,7);c.fill();c.beginPath();c.arc(s*0.13,-s*0.74,s*0.055,0,7);c.fill()};
+SPR.nightmare=function(c,s,col){var i;
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=_rg(c,0,0,s*1.6,[[0,withHex(col,0.4)],[0.6,withHex(col,0.12)],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,0,s*1.6,0,7);c.fill();c.restore();
+ c.globalCompositeOperation='source-over';c.strokeStyle=col;c.lineWidth=Math.max(3,s*0.08);c.beginPath();c.moveTo(0,-s*0.2);c.lineTo(0,s*1.15);c.stroke();
+ c.fillStyle=_vg(c,0,-s*0.6,0,s,[[0,'rgba(40,12,56,0.95)'],[1,'rgba(8,2,14,0.97)']]);c.beginPath();c.moveTo(-s*0.5,s);c.quadraticCurveTo(-s*0.66,-s*0.3,-s*0.3,-s*0.7);c.quadraticCurveTo(0,-s*0.95,s*0.3,-s*0.7);c.quadraticCurveTo(s*0.66,-s*0.3,s*0.5,s);c.quadraticCurveTo(s*0.2,s*0.7,0,s);c.quadraticCurveTo(-s*0.2,s*0.7,-s*0.5,s);c.closePath();c.fill();c.stroke();
+ c.strokeStyle=col;c.lineWidth=Math.max(2,s*0.05);c.beginPath();c.moveTo(-s*0.28,-s*0.62);c.quadraticCurveTo(-s*0.7,-s*1.05,-s*0.45,-s*1.35);c.moveTo(s*0.28,-s*0.62);c.quadraticCurveTo(s*0.7,-s*1.05,s*0.45,-s*1.35);c.stroke();
+ c.fillStyle='rgba(2,1,4,0.97)';c.beginPath();c.ellipse(0,-s*0.42,s*0.26,s*0.34,0,0,7);c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=withHex(col,0.5);c.beginPath();c.arc(-s*0.11,-s*0.44,s*0.12,0,7);c.fill();c.beginPath();c.arc(s*0.11,-s*0.44,s*0.12,0,7);c.fill();c.fillStyle='#ff3355';c.beginPath();c.ellipse(-s*0.11,-s*0.44,s*0.06,s*0.09,0.2,0,7);c.fill();c.beginPath();c.ellipse(s*0.11,-s*0.44,s*0.06,s*0.09,-0.2,0,7);c.fill();c.restore();
+ c.fillStyle=withHex(col,0.5);for(i=-2;i<=2;i++){var x=i*s*0.22;c.beginPath();c.moveTo(x-s*0.05,s*0.6);c.quadraticCurveTo(x+Math.sin(t*0.1+i)*s*0.18,s*1.02,x+s*0.05,s*0.6);c.closePath();c.fill()}};
+/* ============================================================
+   MINDSCAPE DOS II — adaptive generative soundtrack (v2)
+   chord progressions + lead melody + layered drums
+   ============================================================ */
+var MUS={on:0,ctx:null,master:null,rev:null,delay:null,delayIn:null,dry:null,timer:null,next:0,step:0,bar:0,scene:'L0',noise:null};
+function mtof(m){return 440*Math.pow(2,(m-69)/12)}
+function musNoise(a){if(MUS.noise)return MUS.noise;var b=a.createBuffer(1,a.sampleRate,a.sampleRate),d=b.getChannelData(0),i;for(i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=b;return b}
+function musImpulse(a,dur,dec){var len=Math.floor(a.sampleRate*dur),b=a.createBuffer(2,len,a.sampleRate),c,i;for(c=0;c<2;c++){var d=b.getChannelData(c);for(i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,dec)}return b}
+const SCENES={
+ 'L0':{bpm:82,root:45,scale:[0,2,3,5,7,8,10],prog:[0,5,3,4],pad:[0,2,4],bassEvery:8,arpEvery:4,perc:'drip',padType:'sawtooth',leadType:'triangle',lead:[-1,-1,4,-1,2,-1,-1,0]},
+ 'L1':{bpm:94,root:57,scale:[0,2,4,6,7,9,11],prog:[0,4,5,3],pad:[0,2,4],bassEvery:8,arpEvery:2,perc:'tick',padType:'triangle',leadType:'sine',lead:[4,-1,6,-1,5,-1,4,2]},
+ 'L2':{bpm:104,root:50,scale:[0,2,3,5,7,8,11],prog:[0,3,4,0],pad:[0,2,4,6],bassEvery:4,arpEvery:2,perc:'beat',padType:'sawtooth',leadType:'square',lead:[7,-1,6,4,-1,5,-1,7]},
+ 'B':{bpm:134,root:43,scale:[0,1,3,5,6,8,10],prog:[0,0,5,6],pad:[0,1,4],bassEvery:2,arpEvery:1,perc:'drive',padType:'sawtooth',leadType:'sawtooth',lead:[0,-1,3,-1,5,-1,6,5]}
+};
+function musEnsure(){if(MUS.on)return;try{var a=audio;if(!a||!master)return;MUS.ctx=a;
+ MUS.master=a.createGain();MUS.master.gain.value=0.0001;MUS.master.connect(master);
+ MUS.dry=a.createGain();MUS.dry.gain.value=1;MUS.dry.connect(MUS.master);
+ MUS.rev=a.createConvolver();MUS.rev.buffer=musImpulse(a,2.4,3.2);var rg=a.createGain();rg.gain.value=0.55;MUS.rev.connect(rg);rg.connect(MUS.master);
+ MUS.delay=a.createDelay(1.0);MUS.delay.delayTime.value=0.28;var dg=a.createGain();dg.gain.value=0.26;var fb=a.createGain();fb.gain.value=0.34;MUS.delay.connect(fb);fb.connect(MUS.delay);MUS.delay.connect(dg);dg.connect(MUS.master);MUS.delayIn=MUS.delay;
+ MUS.on=1;MUS.next=a.currentTime+0.12;MUS.step=0;MUS.bar=0;
+ MUS.master.gain.setValueAtTime(0.0001,a.currentTime);MUS.master.gain.exponentialRampToValueAtTime(0.72,a.currentTime+1.4);
+ MUS.timer=setInterval(musTick,25);
+}catch(e){MUS.on=0}}
+function musStop(){if(!MUS.on)return;try{if(MUS.timer)clearInterval(MUS.timer);MUS.timer=null;var a=MUS.ctx;if(MUS.master){MUS.master.gain.cancelScheduledValues(a.currentTime);MUS.master.gain.setTargetAtTime(0.0001,a.currentTime,0.25)}var m=MUS.master;setTimeout(function(){try{m&&m.disconnect()}catch(e){}},500)}catch(e){}MUS.on=0;MUS.master=null}
+function musScene(name){if(!MUS.on||MUS.scene===name||!SCENES[name])return;MUS.scene=name;try{var a=MUS.ctx,g=MUS.master.gain;g.cancelScheduledValues(a.currentTime);g.setValueAtTime(Math.max(0.04,g.value||0.2),a.currentTime);g.linearRampToValueAtTime(0.14,a.currentTime+0.14);g.linearRampToValueAtTime(0.72,a.currentTime+0.9)}catch(e){}}
+function musV(type,freq,t0,dur,gain,dest,detune){var a=MUS.ctx,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq;if(detune)o.detune.value=detune;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(Math.max(0.002,gain),t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(dest);o.start(t0);o.stop(t0+dur+0.05)}
+function musP(kind,t0){var a=MUS.ctx,s=a.createBufferSource();s.buffer=musNoise(a);var f=a.createBiquadFilter(),g=a.createGain();f.type='highpass';f.frequency.value=kind=='drive'?1800:(kind=='beat'?900:6500);var amp=(kind=='beat'||kind=='drive')?0.22:0.1;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(amp,t0+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t0+(kind=='drive'?0.09:0.05));s.connect(f);f.connect(g);g.connect(MUS.dry);s.start(t0);s.stop(t0+0.14)}
+function musTick(){if(!MUS.on)return;try{var a=MUS.ctx,sc=SCENES[MUS.scene]||SCENES.L0,spb=60/sc.bpm/4;while(MUS.next<a.currentTime+0.12){musSchedule(sc,MUS.next,MUS.step,MUS.bar,spb);MUS.next+=spb;MUS.step++;if(MUS.step>=16){MUS.step=0;MUS.bar++}}}catch(e){}}
+function musSchedule(sc,t0,step,bar,spb){var sca=sc.scale,root=sc.root,deg=sc.prog[bar%sc.prog.length];
+ if(step%sc.bassEvery==0){var bn=root-12+sca[deg]+((step==8&&sc.perc!='drip')?7:0);musV(sc.padType,mtof(bn),t0,spb*sc.bassEvery*0.92,0.13,MUS.dry)}
+ if(step==0)musV('sine',mtof(root-24+sca[deg]),t0,spb*16*0.9,0.1,MUS.dry);
+ if(step==0){sc.pad.forEach(function(pd,pi){var pn=root+12+sca[(deg+pd)%sca.length];musV(sc.padType,mtof(pn),t0,spb*16*0.96,0.04,MUS.rev,(pi-1)*7)})}
+ if(step==0){sc.pad.forEach(function(pd,pi){var sn=root+24+sca[(deg+pd)%sca.length];musV('sine',mtof(sn),t0,spb*16,0.016,MUS.rev,(pi-1)*5)})}
+ if(step%sc.arpEvery==0){var n=step/sc.arpEvery,an=root+12+sca[(deg+n)%sca.length];if(Math.random()<0.22)an+=12;musV(sc.leadType,mtof(an),t0,spb*sc.arpEvery*0.78,0.05,(sc.perc=='drive')?MUS.dry:MUS.delayIn)}
+ if(step%2==0){var li=sc.lead[(step/2)%sc.lead.length];if(li>=0){var ln=root+24+sca[li%sca.length];musV(sc.leadType,mtof(ln),t0,spb*2.6,0.045,MUS.delayIn,3)}}
+ if(sc.perc=='drip'){if(step%8==4&&Math.random()<0.6)musP('tick',t0)}
+ else if(sc.perc=='tick'){if(step%4==2)musP('tick',t0);if(step%8==0)musP('beat',t0)}
+ else if(sc.perc=='beat'){if(step%4==0)musP('beat',t0);if(step%4==2)musP('tick',t0)}
+ else if(sc.perc=='drive'){if(step%2==0)musP('drive',t0);if(step%4==2)musP('tick',t0);if(step%8==4)musP('beat',t0)}
+}
+function sfx(name){if(!sound||!audio)return;function seq(a){a.forEach(function(n){setTimeout(function(){tone(n[0],n[1],n[2]||'triangle',n[3]||.05)},n[4]||0)})}
+ switch(name){
+  case 'boom':seq([[70,.5,'sawtooth',.12,0],[48,.7,'sine',.1,40],[120,.3,'triangle',.05,0]]);break;
+  case 'sparkle':seq([[1320,.06,'sine',.04,0],[1760,.06,'sine',.04,60],[2200,.09,'sine',.035,120]]);break;
+  case 'whoosh':seq([[420,.16,'sawtooth',.04,0],[260,.18,'sine',.03,40]]);break;
+  case 'pickup':seq([[660,.07,'triangle',.05,0],[990,.09,'triangle',.045,70]]);break;
+  case 'coin':seq([[1245,.05,'square',.04,0],[1660,.07,'square',.035,55]]);break;
+  case 'equip':seq([[300,.05,'square',.05,0],[460,.06,'square',.04,55]]);break;
+  case 'click':tone(240,.05,'sine',.04);break;
+  case 'heal':seq([[523,.09,'sine',.05,0],[659,.09,'sine',.045,85],[784,.13,'sine',.05,170]]);break;
+  case 'shield':seq([[330,.12,'triangle',.05,0],[440,.15,'triangle',.045,65]]);break;
+  case 'spell':seq([[700,.08,'square',.05,0],[520,.11,'sawtooth',.04,45]]);break;
+  case 'hit':seq([[180,.07,'square',.06,0],[120,.1,'square',.05,45]]);break;
+  case 'crit':seq([[880,.06,'square',.06,0],[1320,.07,'square',.055,55],[1760,.13,'triangle',.05,120]]);break;
+  case 'sting':seq([[110,.14,'sawtooth',.07,0],[98,.17,'sawtooth',.06,70]]);break;
+  case 'levelup':seq([[523,.1,'triangle',.05,0],[659,.1,'triangle',.05,120],[784,.1,'triangle',.05,240],[1046,.22,'triangle',.055,360]]);break;
+  case 'victory':seq([[659,.1,'triangle',.05,0],[880,.1,'triangle',.05,95],[1046,.2,'triangle',.055,190]]);break;
+  case 'seal':seq([[392,.13,'sine',.05,0],[523,.13,'sine',.05,0],[659,.2,'sine',.05,95]]);break;
+  case 'descend':seq([[523,.08,'sine',.05,0],[392,.09,'sine',.05,75],[294,.12,'sine',.05,160],[220,.17,'sine',.05,255]]);break;
+  case 'open':tone(420,.06,'sine',.04);break;
+  default:tone(440,.05);
+ }}
+/* ============================================================
+   MINDSCAPE DOS II — textured raycasting engine (v2)
+   torches, doorways, head-bob, adaptive-music driver
+   ============================================================ */
+var RC={wallTex:{},buf:null,z:null,lastL:-1,camX:1.5,camY:1.5,camA:0,bob:0,
+        anim:0,animT:0,animDur:0,kind:null,fromX:1.5,fromY:1.5,toX:1.5,toY:1.5,
+        fromA:0,toA:0,tgtX:1,tgtY:1,tgtD:1,bdx:0,bdy:0,prev:0,fov:0.7};
+const ICONCOL={C:'#48eaff',T:'#ffdc63',F:'#7CFF8A',O:'#c96cff',X:'#ffffff',B:'#ff3355',N:'#dfe9ff',W:'#b8ff65',S:'#55ff66'};
+function dirAngle(d){return [-Math.PI/2,0,Math.PI/2,Math.PI][d]}
+
+function rcBrick(){var t=document.createElement('canvas');t.width=64;t.height=64;var x=t.getContext('2d');
+ x.fillStyle='#7a7a7a';x.fillRect(0,0,64,64);var i;
+ for(i=0;i<3000;i++){var px=Math.random()*64|0,py=Math.random()*64|0,v=70+Math.random()*120|0;x.fillStyle='rgba('+v+','+v+','+v+',0.5)';x.fillRect(px,py,1,1)}
+ var r;for(r=0;r<4;r++){var y=r*16,off=(r%2)*16;
+  x.strokeStyle='rgba(0,0,0,0.55)';x.lineWidth=2;x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();
+  for(var bx=-16+off;bx<64;bx+=32){x.beginPath();x.moveTo(bx,y);x.lineTo(bx,y+16);x.stroke();x.strokeStyle='rgba(255,255,255,0.10)';x.beginPath();x.moveTo(bx+1,y+1);x.lineTo(bx+1,y+15);x.stroke();x.strokeStyle='rgba(0,0,0,0.55)'}
+  x.strokeStyle='rgba(255,255,255,0.12)';x.beginPath();x.moveTo(0,y+1);x.lineTo(64,y+1);x.stroke()}
+ return t}
+function rcWall(l){if(RC.wallTex[l])return RC.wallTex[l];var base=RC.brick||(RC.brick=rcBrick()),L=levels[l];
+ var t=document.createElement('canvas');t.width=64;t.height=64;var x=t.getContext('2d');
+ x.drawImage(base,0,0);x.globalCompositeOperation='multiply';x.fillStyle=shade(L.wall,2.2);x.fillRect(0,0,64,64);
+ x.globalCompositeOperation='overlay';x.fillStyle=withHex(L.theme,0.22);x.fillRect(0,0,64,64);
+ x.globalCompositeOperation='source-over';RC.wallTex[l]=t;return t}
+
+function rcRender(){var view=$('#view');if(!view)return;var dw=view.width,dh=view.height;if(dw<2||dh<2)return;
+ var bw=360,bh=Math.max(140,Math.round(bw*dh/dw));
+ if(!RC.buf)RC.buf=document.createElement('canvas');
+ if(RC.buf.width!=bw||RC.buf.height!=bh){RC.buf.width=bw;RC.buf.height=bh}
+ var o=RC.buf.getContext('2d');o.imageSmoothingEnabled=false;
+ var L=level(),wall=rcWall(S.l);
+ var camX=RC.camX,camY=RC.camY,camA=RC.camA;
+ var dirX=Math.cos(camA),dirY=Math.sin(camA),planeX=-Math.sin(camA)*RC.fov,planeY=Math.cos(camA)*RC.fov;
+ var hor=Math.round(bh*0.5+(RC.bob||0)*bh*0.35);
+ rcFloorCeil(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,L);
+ var zbuf=RC.z;if(!zbuf||zbuf.length!=bw){zbuf=RC.z=new Float32Array(bw)}
+ var flick=0.92+0.05*Math.sin(t*0.3)+0.03*Math.sin(t*1.9+1);
+ var x;for(x=0;x<bw;x++){
+  var camx=2*x/bw-1,rdx=dirX+planeX*camx,rdy=dirY+planeY*camx;
+  var mapX=Math.floor(camX),mapY=Math.floor(camY);
+  var ddx=rdx==0?1e30:Math.abs(1/rdx),ddy=rdy==0?1e30:Math.abs(1/rdy),stepX,stepY,sdx,sdy;
+  if(rdx<0){stepX=-1;sdx=(camX-mapX)*ddx}else{stepX=1;sdx=(mapX+1-camX)*ddx}
+  if(rdy<0){stepY=-1;sdy=(camY-mapY)*ddy}else{stepY=1;sdy=(mapY+1-camY)*ddy}
+  var hit=0,side=0,g=0;
+  while(!hit&&g++<48){if(sdx<sdy){sdx+=ddx;mapX+=stepX;side=0}else{sdy+=ddy;mapY+=stepY;side=1}if(cell(mapX,mapY)=='#')hit=1}
+  var perp=side==0?(sdx-ddx):(sdy-ddy);if(perp<0.05)perp=0.05;zbuf[x]=perp;
+  var lh=bh/perp,y0=Math.floor(hor-lh/2),y1=Math.floor(hor+lh/2);
+  var wxf=side==0?(camY+perp*rdy):(camX+perp*rdx);wxf-=Math.floor(wxf);
+  var texX=Math.floor(wxf*64);if((side==0&&rdx>0)||(side==1&&rdy<0))texX=63-texX;if(texX<0)texX=0;if(texX>63)texX=63;
+  o.drawImage(wall,texX,0,1,64,x,y0,1,(y1-y0));
+  var lightF=clamp(1.28-perp*0.16,0.10,1.0)*flick;if(side==1)lightF*=0.7;
+  o.fillStyle='rgba(2,5,3,'+clamp(1-lightF,0,0.94).toFixed(3)+')';o.fillRect(x,y0,1,(y1-y0));
+ }
+ rcTorches(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf);
+ rcWallSigils(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf);
+ if(!S.battle)rcSprites(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf,L);
+ o.save();o.globalCompositeOperation='lighter';var tg=o.createRadialGradient(bw/2,bh*0.62,0,bw/2,bh*0.62,bh*0.6);
+ tg.addColorStop(0,'rgba(255,184,96,'+(0.11*flick).toFixed(3)+')');tg.addColorStop(1,'rgba(0,0,0,0)');o.fillStyle=tg;o.fillRect(0,0,bw,bh);o.restore();
+ if(S.battle){var _es=(RC.eshake||0),_exo=Math.sin(t*1.6)*_es*16;rcBillboardArt(o,bw/2+_exo,hor+bh*0.04,bh*0.66,'monster',S.battle.name,L.theme,1,'');if(RC.eshake){RC.eshake-=0.12;if(RC.eshake<0)RC.eshake=0}}
+ vctx.imageSmoothingEnabled=false;vctx.clearRect(0,0,dw,dh);vctx.drawImage(RC.buf,0,0,bw,bh,0,0,dw,dh);
+ drawFrame(vctx,dw,dh,L.theme);
+ rcParticles(vctx,dw,dh);
+ rcViewmodel(vctx,dw,dh);
+ if(RC.flash){vctx.save();vctx.globalAlpha=clamp(RC.flash.t*0.45,0,0.6);vctx.fillStyle=RC.flash.col;vctx.fillRect(0,0,dw,dh);vctx.restore();RC.flash.t-=0.14;if(RC.flash.t<=0)RC.flash=null}
+ rcFloatsDraw(vctx,dw,dh);
+}
+
+function rcTorches(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf){
+ var m=level().map,invDet=1/(planeX*dirY-dirX*planeY),DC=[[0,-1],[1,0],[0,1],[-1,0]],list=[],yy,xx,di;
+ for(yy=0;yy<m.length;yy++)for(xx=0;xx<m[yy].length;xx++){if(m[yy][xx]=='#')continue;
+  var ddc=(xx-camX)*(xx-camX)+(yy-camY)*(yy-camY);if(ddc>58)continue;
+  if((hsh('t'+xx+'_'+yy+'_'+S.l)%7)!=0)continue;
+  var wd=-1;for(di=0;di<4;di++){if(cell(xx+DC[di][0],yy+DC[di][1])=='#'){wd=di;break}}if(wd<0)continue;
+  list.push({x:xx+0.5+DC[wd][0]*0.42,y:yy+0.5+DC[wd][1]*0.42,dd:ddc})}
+ for(var i=0;i<list.length;i++){var s=list[i],dx=s.x-camX,dy=s.y-camY;s.tx=invDet*(dirY*dx-dirX*dy);s.ty=invDet*(-planeY*dx+planeX*dy)}
+ list=list.filter(function(s){return s.ty>0.3});list.sort(function(a,b){return b.dd-a.dd});
+ for(i=0;i<list.length;i++){var s=list[i],sx=(bw/2)*(1+s.tx/s.ty),col=Math.floor(sx);if(col<0||col>=bw)continue;if(s.ty>=zbuf[col]+0.1)continue;
+  var size=clamp(Math.abs(bh/s.ty)*0.18,4,bh*0.16);rcFlame(o,sx,hor-size*1.3,size)}
+}
+function rcFlame(o,cx,cy,size){var fl=0.82+0.18*Math.sin(t*0.5+cx)+0.08*Math.sin(t*1.7+cx*0.7),k;
+ o.save();o.translate(cx,cy);
+ o.globalCompositeOperation='source-over';o.strokeStyle='#2a1f12';o.lineWidth=Math.max(1.5,size*0.12);o.lineCap='round';o.beginPath();o.moveTo(0,size*0.5);o.lineTo(0,size*1.0);o.stroke();o.strokeStyle='#4a3a20';o.lineWidth=Math.max(1,size*0.06);o.beginPath();o.moveTo(-size*0.18,size*0.55);o.quadraticCurveTo(0,size*0.42,size*0.18,size*0.55);o.stroke();
+ o.globalCompositeOperation='lighter';
+ var lp=o.createRadialGradient(0,-size*0.1,0,0,-size*0.1,size*1.5);lp.addColorStop(0,'rgba(255,180,90,'+(0.12*fl).toFixed(3)+')');lp.addColorStop(0.5,'rgba(255,120,40,'+(0.05*fl).toFixed(3)+')');lp.addColorStop(1,'rgba(0,0,0,0)');o.fillStyle=lp;o.beginPath();o.arc(0,-size*0.1,size*1.5,0,7);o.fill();
+ for(k=0;k<3;k++){var off=(k-1)*size*0.16,sw=Math.sin(t*0.6+k*2+cx)*size*0.1,hgt=size*(0.95-k*0.16)*fl;o.fillStyle=['rgba(255,80,18,0.55)','rgba(255,150,40,0.6)','rgba(255,210,80,0.7)'][k];o.beginPath();o.moveTo(off-size*0.18,size*0.4);o.quadraticCurveTo(off+sw-size*0.1,-hgt*0.4,off+sw*0.5,-hgt);o.quadraticCurveTo(off+sw+size*0.1,-hgt*0.4,off+size*0.18,size*0.4);o.closePath();o.fill()}
+ o.fillStyle='rgba(255,255,220,0.95)';o.beginPath();o.ellipse(0,size*0.05,size*0.12,size*0.34*fl,0,0,7);o.fill();
+ for(k=0;k<4;k++){var ph=(t*0.02+k*0.27)%1,ey=size*0.3-ph*size*1.4,ex=Math.sin(t*0.1+k*2)*size*0.25*ph,ea=(1-ph)*0.7;o.fillStyle='rgba(255,180,80,'+ea.toFixed(2)+')';o.beginPath();o.arc(ex,ey,size*0.05*(1-ph*0.6),0,7);o.fill()}
+ o.restore()}
+
+function rcSprites(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf,L){
+ var list=[],k,m=L.map,evs=L.events,p;
+ for(k in evs){p=k.split(',');list.push({x:(+p[0])+0.5,y:(+p[1])+0.5,ev:evs[k],ch:(m[+p[1]]&&m[+p[1]][+p[0]])||'.'})}
+ var yy,xx;for(yy=0;yy<m.length;yy++)for(xx=0;xx<m[yy].length;xx++){var ch=m[yy][xx];if('CTFOXBNWS'.indexOf(ch)>=0&&!evs[xx+','+yy])list.push({x:xx+0.5,y:yy+0.5,ev:null,ch:ch})}
+ var invDet=1/(planeX*dirY-dirX*planeY),i;
+ for(i=0;i<list.length;i++){var s=list[i],dx=s.x-camX,dy=s.y-camY;s.tx=invDet*(dirY*dx-dirX*dy);s.ty=invDet*(-planeY*dx+planeX*dy);s.dd=dx*dx+dy*dy}
+ list=list.filter(function(s){return s.ty>0.25&&s.dd<64});list.sort(function(a,b){return b.dd-a.dd});
+ for(i=0;i<list.length;i++){var s=list[i],sx=(bw/2)*(1+s.tx/s.ty),col=Math.floor(sx);
+  if(col<0||col>=bw)continue;if(s.ty>=zbuf[col]+0.2)continue;
+  var size=clamp(Math.abs(bh/s.ty),10,bh*1.3),kind,name;
+  if(s.ev&&s.ev.npc){kind='npc';name=s.ev.npc}
+  else if(s.ev&&s.ev.battle){kind='monster';name=s.ev.battle}
+  else if((s.ev&&(s.ev.stairs!=null||s.ev.win))||s.ch=='X'){kind='door';name=s.ch}
+  else{kind='icon';name=s.ch}
+  var lightF=clamp(1.22-Math.sqrt(s.dd)*0.15,0.28,1);
+  rcBillboardArt(o,sx,hor+size*0.16,size,kind,name,L.theme,lightF,s.ch);
+ }
+}
+function rcBillboardArt(o,sx,cy,sizePx,kind,name,theme,lightF,ch){
+ o.save();var _bob=(kind=='npc'||kind=='monster')?Math.sin(t*0.05+sx*0.3)*sizePx*0.02:0;o.translate(sx,cy+_bob);var s=sizePx*0.42;
+ var cat=kind=='monster'?(spriteCat(name)||'blob'):null;
+ var col=kind=='monster'?'#ff5a6e':(kind=='npc'?'#ffdc63':(kind=='door'?'#ffffff':(ICONCOL[ch]||'#7CFF8A')));
+ if(cat=='wolf'||cat=='spirit')col='#bfe9ff';if(cat=='fairy')col='#9CFFB0';if(cat=='nightmare')col='#c96cff';if(cat=='cloud')col='#bfe2ff';
+ o.globalAlpha=clamp(lightF,0.2,1);o.shadowColor=col;o.shadowBlur=9;o.lineWidth=Math.max(1,s*0.03);o.strokeStyle=col;
+ o.fillStyle=kind=='monster'?'rgba(40,2,10,0.85)':(kind=='npc'?'rgba(28,20,3,0.85)':'rgba(6,22,8,0.8)');
+ if(kind=='door'){o.shadowBlur=12;o.fillStyle='rgba(8,10,14,0.92)';
+  o.beginPath();o.moveTo(-s*0.72,s);o.lineTo(-s*0.72,-s*0.2);o.quadraticCurveTo(0,-s*1.05,s*0.72,-s*0.2);o.lineTo(s*0.72,s);o.closePath();o.fill();
+  o.save();o.globalCompositeOperation='lighter';var pg=o.createRadialGradient(0,0,0,0,0,s);pg.addColorStop(0,withHex(theme,0.55));pg.addColorStop(1,'rgba(0,0,0,0)');o.fillStyle=pg;o.beginPath();o.arc(0,0,s,0,7);o.fill();o.restore();
+  o.strokeStyle=col;o.lineWidth=Math.max(2,s*0.05);o.beginPath();o.moveTo(-s*0.72,s);o.lineTo(-s*0.72,-s*0.2);o.quadraticCurveTo(0,-s*1.05,s*0.72,-s*0.2);o.lineTo(s*0.72,s);o.stroke();
+  o.strokeStyle=withHex('#ffffff',0.5);for(var d=0;d<3;d++){o.beginPath();o.arc(0,0,s*(0.18+d*0.18),t*0.05+d,t*0.05+d+3.6);o.stroke()}}
+ else if(kind=='icon'){o.fillStyle=col;drawIcon(o,ch,s*0.72,col,null)}
+ else if(cat&&SPR[cat])SPR[cat](o,s,col,theme);
+ else if(kind=='npc')(SPR[npcSkin(name)]||SPR.npc)(o,s,col,theme);
+ else SPR.blob(o,s,col,theme,name);
+ o.globalAlpha=1;o.shadowBlur=0;o.restore();
+}
+
+function rcStep(dt){if(!S)return;
+ if(RC.lastL!==S.l){RC.anim=0;RC.lastL=S.l}
+ if(RC.anim){RC.animT+=dt;var e=Math.min(1,RC.animT/RC.animDur),ee=e*e*(3-2*e);
+  if(RC.kind=='move'){RC.camX=RC.fromX+(RC.toX-RC.fromX)*ee;RC.camY=RC.fromY+(RC.toY-RC.fromY)*ee;RC.camA=RC.fromA;RC.bob=Math.sin(e*Math.PI*2)*0.05}
+  else if(RC.kind=='turn'){RC.camA=RC.fromA+(RC.toA-RC.fromA)*ee;RC.camX=RC.fromX;RC.camY=RC.fromY;RC.bob*=0.85}
+  else if(RC.kind=='bump'){var b=Math.sin(Math.PI*e)*0.16;RC.camX=RC.fromX+RC.bdx*b;RC.camY=RC.fromY+RC.bdy*b;RC.camA=RC.fromA;RC.bob=0}
+  if(e>=1){var kk=RC.kind;RC.anim=0;rcComplete(kk)}
+ }else{RC.camX=S.x+0.5;RC.camY=S.y+0.5;RC.camA=dirAngle(S.d);RC.bob=(RC.bob||0)*0.8;if(Math.abs(RC.bob)<0.002)RC.bob=0}
+}
+function rcComplete(kind){
+ if(kind=='move'){S.x=RC.tgtX;S.y=RC.tgtY;S.turn++;visit();if(!S.battle&&Math.random()<0.075+S.l*0.025)startBattle(pick(level().enc));drawMap()}
+ else if(kind=='turn'){S.d=RC.tgtD;S.turn++;updateHUD();drawMap()}
+ var q=RC.queued;RC.queued=null;if(q&&!S.battle&&!$('#modal').classList.contains('on'))q()
+}
+function rcLoop(ts){if(!RC.prev)RC.prev=ts;var dt=Math.min(0.05,(ts-RC.prev)/1000);RC.prev=ts;t++;
+ try{rcStep(dt);
+ if(sound&&audio&&master){musEnsure();musScene(S&&S.battle?'B':('L'+(S?S.l:0)))}else{musStop()}
+ var _nb=!!(S&&S.battle);if(_nb&&!RC.wasB){RC.wasB=1;sfx('sting')}else if(!_nb)RC.wasB=0;
+ if(S){if(t%3==0)drawStars();rcRender()}}catch(e){if(!RC._warned){RC._warned=1;console.warn('rc',e.message)}}
+ requestAnimationFrame(rcLoop);
+}
+function rcFootstep(){tone(96,.08,'sine',.05);tone(150,.05,'triangle',.022)}
+
+function rcRR(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+function rcMkTex(kind,l){var c=document.createElement('canvas');c.width=64;c.height=64;var x=c.getContext('2d'),L=levels[l],i;
+ if(kind=='floor'){x.fillStyle=shade(L.floor,1.05);x.fillRect(0,0,64,64);
+  for(var gy=0;gy<4;gy++)for(var gx=0;gx<4;gx++){x.fillStyle=shade(L.floor,0.78+((gx+gy)%2)*0.34);rcRR(x,gx*16+1.5,gy*16+1.5,13,13,3);x.fill()}
+  for(i=0;i<2200;i++){var rx=Math.random()*64|0,ry=Math.random()*64|0,v=128+(Math.random()*60-30)|0;x.fillStyle='rgba('+v+','+v+','+v+',0.16)';x.fillRect(rx,ry,1,1)}
+  x.globalCompositeOperation='overlay';x.fillStyle=withHex(L.theme,0.14);x.fillRect(0,0,64,64);
+ }else{
+  if(l==1){x.fillStyle='#04121f';x.fillRect(0,0,64,64);
+   for(i=0;i<42;i++){x.fillStyle='rgba(200,240,255,'+(0.35+Math.random()*0.5)+')';x.beginPath();x.arc(Math.random()*64,Math.random()*64,Math.random()<0.18?1.5:0.8,0,7);x.fill()}
+   x.strokeStyle='rgba(120,200,255,0.10)';x.lineWidth=3;for(i=0;i<4;i++){var yy=8+i*16;x.beginPath();x.moveTo(0,yy);x.bezierCurveTo(20,yy-6,44,yy+6,64,yy);x.stroke()}
+  }else if(l==2){x.fillStyle='#15110a';x.fillRect(0,0,64,64);
+   x.strokeStyle='rgba(201,168,76,0.5)';x.lineWidth=1.4;for(i=0;i<7;i++){var ax=Math.random()*64,ay=Math.random()*64;x.beginPath();x.moveTo(ax,ay);x.lineTo(ax+(Math.random()*24-12),ay+(Math.random()*24-12));x.lineTo(ax+(Math.random()*24-12),ay+(Math.random()*24-12));x.stroke()}
+   for(i=0;i<10;i++){x.fillStyle='rgba(255,220,120,'+(0.4+Math.random()*0.4)+')';x.beginPath();x.arc(Math.random()*64,Math.random()*64,1,0,7);x.fill()}
+  }else{x.fillStyle=shade(L.sky,0.45);x.fillRect(0,0,64,64);
+   x.fillStyle='rgba(0,0,0,0.5)';for(i=0;i<10;i++){var tx2=Math.random()*64,tw2=2+Math.random()*4;x.beginPath();x.moveTo(tx2,0);x.lineTo(tx2+tw2,0);x.lineTo(tx2+tw2/2,4+Math.random()*7);x.closePath();x.fill()}
+   x.strokeStyle='rgba(0,0,0,0.4)';x.lineWidth=1;for(i=0;i<5;i++){var cx2=Math.random()*64,cy2=Math.random()*64;x.beginPath();x.moveTo(cx2,cy2);x.lineTo(cx2+Math.random()*16-8,cy2+Math.random()*16-8);x.stroke()}
+   for(i=0;i<700;i++){x.fillStyle='rgba(0,0,0,0.12)';x.fillRect(Math.random()*64|0,Math.random()*64|0,1,1)}
+  }
+  x.globalCompositeOperation='overlay';x.fillStyle=withHex(L.theme,0.10);x.fillRect(0,0,64,64);
+ }
+ return x.getImageData(0,0,64,64)}
+function rcFloorTex(l){RC.floorTex=RC.floorTex||{};if(!RC.floorTex[l])RC.floorTex[l]=rcMkTex('floor',l);return RC.floorTex[l]}
+function rcCeilTex(l){RC.ceilTex=RC.ceilTex||{};if(!RC.ceilTex[l])RC.ceilTex[l]=rcMkTex('ceil',l);return RC.ceilTex[l]}
+function rcFloorCeil(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,L){
+ var fd=rcFloorTex(S.l).data,cd=rcCeilTex(S.l).data;
+ if(!RC.img||RC.img.width!=bw||RC.img.height!=bh)RC.img=o.createImageData(bw,bh);
+ var data=RC.img.data,r0x=dirX-planeX,r0y=dirY-planeY,r1x=dirX+planeX,r1y=dirY+planeY,posZ=0.5*bh;
+ var y,x,p,rd,sxx,syy,fx,fy,sh,base,ax,ay,tx,ty,si,di;
+ for(y=hor;y<bh;y++){p=y-hor;if(p<1)p=1;rd=posZ/p;sxx=rd*(r1x-r0x)/bw;syy=rd*(r1y-r0y)/bw;fx=camX+rd*r0x;fy=camY+rd*r0y;sh=clamp(1.25-rd*0.16,0.12,1.0);base=y*bw*4;
+  for(x=0;x<bw;x++){ax=fx-(fx|0);ay=fy-(fy|0);tx=(ax*64)&63;ty=(ay*64)&63;si=(ty*64+tx)<<2;di=base+(x<<2);data[di]=fd[si]*sh;data[di+1]=fd[si+1]*sh;data[di+2]=fd[si+2]*sh;data[di+3]=255;fx+=sxx;fy+=syy}}
+ for(y=0;y<hor;y++){p=hor-y;if(p<1)p=1;rd=posZ/p;sxx=rd*(r1x-r0x)/bw;syy=rd*(r1y-r0y)/bw;fx=camX+rd*r0x;fy=camY+rd*r0y;sh=clamp(1.05-rd*0.18,0.06,0.82);base=y*bw*4;
+  for(x=0;x<bw;x++){ax=fx-(fx|0);ay=fy-(fy|0);tx=(ax*64)&63;ty=(ay*64)&63;si=(ty*64+tx)<<2;di=base+(x<<2);data[di]=cd[si]*sh;data[di+1]=cd[si+1]*sh;data[di+2]=cd[si+2]*sh;data[di+3]=255;fx+=sxx;fy+=syy}}
+ o.putImageData(RC.img,0,0)}
+
+function rcParticles(c,w,h){if(!S)return;c.save();c.globalCompositeOperation='lighter';var L=level(),col=L.theme,up=(S.l==1),n=24,i;
+ for(i=0;i<n;i++){var px=((Math.sin(i*131.7)*0.5+0.5)*w+Math.sin(t*0.015+i)*10)%w;if(px<0)px+=w;
+  var span=h*1.12,prog=(t*(0.5+(i%4)*0.3)+i*53)%span,py=up?(h-prog):(prog-h*0.06);
+  var a=0.07+0.07*Math.sin(t*0.04+i*1.3);if(a<0.01)continue;c.fillStyle=withHex(col,a);var r=S.l==2?1.7:1.2;
+  c.beginPath();c.arc(px,py,r,0,7);c.fill()}
+ c.restore()}
+function rcFlash(col){RC.flash={t:1,col:col||'#ffffff'}}
+
+function rcViewmodel(c,w,h){if(!S)return;var p=(typeof living=='function'&&living()[0])||S.party[0];if(!p)return;var wep=p.equip.weapon||'',k=weaponKind(wep),col=gearColor(wep);
+ var sw=RC.swing||0,se=Math.sin(sw*Math.PI),bob=Math.sin(t*0.07)*6+(RC.bob||0)*36;
+ c.save();c.translate(w*0.80,h*1.04+bob-se*h*0.10);c.rotate(-0.42-se*1.05);
+ var sc=Math.max(0.62,Math.min(1.5,h/430));c.scale(sc,sc);c.shadowColor=col;c.shadowBlur=16;c.lineCap='round';
+ if(k=='staff'){c.strokeStyle='#6b4a2a';c.lineWidth=12;c.beginPath();c.moveTo(0,40);c.lineTo(-10,-150);c.stroke();c.fillStyle=col;c.beginPath();c.arc(-12,-162,16,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(-12,-162,6,0,7);c.fill();c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(-12,-162,22,0,7);c.stroke()}
+ else if(k=='bow'){c.strokeStyle=col;c.lineWidth=9;c.beginPath();c.moveTo(-2,60);c.quadraticCurveTo(72,-60,-2,-180);c.stroke();c.strokeStyle='#d8c0a0';c.lineWidth=2;c.beginPath();c.moveTo(-2,60);c.lineTo(-2,-180);c.stroke()}
+ else if(k=='spear'){c.strokeStyle='#6b4a2a';c.lineWidth=11;c.beginPath();c.moveTo(6,60);c.lineTo(-14,-170);c.stroke();c.fillStyle=col;c.beginPath();c.moveTo(-14,-202);c.lineTo(-28,-158);c.lineTo(0,-158);c.closePath();c.fill()}
+ else {c.strokeStyle=col;c.lineWidth=15;c.beginPath();c.moveTo(2,30);c.lineTo(-22,-170);c.stroke();c.lineWidth=7;c.strokeStyle='#eef0f6';c.beginPath();c.moveTo(2,30);c.lineTo(-22,-170);c.stroke();c.shadowBlur=0;c.strokeStyle='#c9a84c';c.lineWidth=16;c.beginPath();c.moveTo(-20,20);c.lineTo(30,46);c.stroke();c.strokeStyle='#6b4a2a';c.lineWidth=13;c.beginPath();c.moveTo(6,30);c.lineTo(18,72);c.stroke()}
+ c.shadowBlur=0;c.fillStyle='#16281a';c.strokeStyle='#3a5a3c';c.lineWidth=3;c.beginPath();c.ellipse(14,66,22,16,0.3,0,7);c.fill();c.stroke();
+ c.restore();if(RC.swing){RC.swing-=0.085;if(RC.swing<0)RC.swing=0}}
+function rcHit(){RC.swing=1;RC.eshake=1}
+
+function rcWallSigils(o,bw,bh,hor,camX,camY,dirX,dirY,planeX,planeY,zbuf){
+ if(typeof ANGELIC=='undefined')return;var m=level().map,invDet=1/(planeX*dirY-dirX*planeY),DC=[[0,-1],[1,0],[0,1],[-1,0]],list=[],yy,xx,di;
+ for(yy=0;yy<m.length;yy++)for(xx=0;xx<m[yy].length;xx++){if(m[yy][xx]=='#')continue;
+  var ddc=(xx-camX)*(xx-camX)+(yy-camY)*(yy-camY);if(ddc>30)continue;
+  if((hsh('g'+xx+'_'+yy+'_'+S.l)%5)!=0)continue;
+  var wd=-1;for(di=0;di<4;di++){if(cell(xx+DC[di][0],yy+DC[di][1])=='#'){wd=di;break}}if(wd<0)continue;
+  list.push({x:xx+0.5+DC[wd][0]*0.46,y:yy+0.5+DC[wd][1]*0.46,dd:ddc,seed:xx*7+yy*13+S.l})}
+ for(var i=0;i<list.length;i++){var s=list[i],dx=s.x-camX,dy=s.y-camY;s.tx=invDet*(dirY*dx-dirX*dy);s.ty=invDet*(-planeY*dx+planeX*dy)}
+ list=list.filter(function(s){return s.ty>0.35});list.sort(function(a,b){return b.dd-a.dd});
+ for(i=0;i<list.length;i++){var s=list[i],sx=(bw/2)*(1+s.tx/s.ty),col=Math.floor(sx);if(col<0||col>=bw)continue;if(s.ty>=zbuf[col]+0.1)continue;
+  var size=clamp(Math.abs(bh/s.ty)*0.42,12,bh*0.5),g=ANGELIC[hsh('w'+s.seed)%ANGELIC.length],a=clamp(1.25-Math.sqrt(s.dd)*0.18,0.22,0.9),fl=0.85+0.15*Math.sin(t*0.25+s.seed);
+  o.save();o.translate(sx,hor-size*0.06);var sc=size/92;o.scale(sc,sc);o.translate(-49,-49);
+  o.globalAlpha=a*fl;o.shadowColor='#ffdc63';o.shadowBlur=16;o.lineWidth=4.4;o.lineCap='round';o.lineJoin='round';
+  var grd=o.createLinearGradient(16,16,82,82);grd.addColorStop(0,'#ffe58d');grd.addColorStop(1,'#c78dff');o.strokeStyle=grd;
+  try{o.stroke(new Path2D(g.d))}catch(e){}
+  o.globalAlpha=1;o.shadowBlur=0;o.restore()}}
+
+function rcFloat(txt,color,big){RC.floats=RC.floats||[];if(RC.floats.length>16)RC.floats.shift();RC.floats.push({txt:txt,c:color||'#fff',big:!!big,life:1,ox:(Math.random()-0.5)*0.24})}
+function rcFloatsDraw(c,w,h){if(!RC.floats||!RC.floats.length)return;var baseY=(S&&S.battle)?h*0.32:h*0.42,baseX=w*0.5,i;c.save();c.textAlign='center';c.textBaseline='middle';for(i=RC.floats.length-1;i>=0;i--){var f=RC.floats[i],rise=(1-f.life)*h*0.3,y=baseY-rise,x=baseX+f.ox*w,sz=(f.big?h*0.08:h*0.052)*(0.7+0.3*Math.min(1,f.life*2));c.globalAlpha=Math.min(1,f.life*1.7);c.font='900 '+sz+'px Orbitron,Eurostile,sans-serif';c.lineWidth=sz*0.2;c.lineJoin='round';c.strokeStyle='rgba(0,0,0,0.9)';c.strokeText(f.txt,x,y);c.fillStyle=f.c;c.shadowColor=f.c;c.shadowBlur=14;c.fillText(f.txt,x,y);c.shadowBlur=0;f.life-=0.022;if(f.life<=0)RC.floats.splice(i,1)}c.globalAlpha=1;c.restore()}
+/* ===== MINDSCAPE DOS II — story expansion II ===== */
+Object.assign(ITEM,{
+ 'Doll Eye':{slot:'charm',will:1,mag:1,icon:'\u25C9'},
+ 'Echo Shard':{slot:'relic',mag:2,will:1,icon:'\u25C8'},
+ 'Crown Sketch':{slot:'charm',will:2,icon:'\u265B'},
+ 'Song Bell':{slot:'charm',pp:4,mag:1,icon:'\u266A'}
+});
+levels[0].events['5,7']={npc:'Mole Tunneler',title:'Mole Tunneler',txt:'A Mole the size of a man pushes its blind snout out of the wall, fur caked in old-world dust. "Down here the inventive survive," it rumbles. "I dig the roads the maps forget. Pay the toll and I will tell you where the dark thins."',choices:[['Pay 25 Thin Gold for the way',function(s){if(s.gold<25)return say('Mole Tunneler','"No gold, no road. Dig your own.")');s.gold-=25;flag('mole');healParty(8);say('Mole Tunneler','It traces a tunnel-map in the dust. "Follow the resonance toward Mt. Truth. And mind the things that froze — they do not dig, they wait." You feel steadier for knowing the way.')}],['Ask what it fears',function(s){say('Mole Tunneler','"The Dragadar. He stopped death, so nothing rots, nothing returns to the soil. A Mole hates a world that will not turn over."')}]]};
+levels[0].events['11,3']={npc:'Lost Doll',title:'Lost Doll',txt:'A porcelain Doll sits in a dry alcove, its painted eyes following you. When it speaks its jaw does not move. "I was loved once, on Old Earth. Then the world changed state and forgot to take me with it. Will you remember me?"',choices:[['Comfort the Doll',function(s){flag('doll');gain('Doll Eye');say('Lost Doll','Something warm passes between you. It gives you a single glass eye. "Now part of me goes where you go. The frozen things cannot bear to be remembered — show them this.")')}],['Step quietly away',function(s){say('Lost Doll','It does not cry. It simply watches you leave, and the watching stays with you a long while.')}]]};
+levels[1].events['7,3']={npc:'Cloud Singer',title:'Cloud Singer',txt:'A figure of woven mist stands on the cloud-floor, humming a chord that makes the rain hang still. "Magic runs rampant up here," she sings, "and song is the oldest magic. Sit in my chord and let it knit you."',choices:[['Sit in the song',function(s){flag('song');gain('Song Bell');healParty(20);restorePP(8);say('Cloud Singer','The chord folds around the party and the small hurts close. A Song Bell hangs itself at your belt — ring it and the Queen will flinch at the harmony.')}],['Ask about the rain',function(s){say('Cloud Singer','"The rain here has memory. When the fog rolls down to New Earth it carries pieces of the Upper World — and sometimes pieces of who you were."')}]]};
+levels[1].events['9,3']={npc:'Temporal Echo',title:'Temporal Echo',txt:'A shimmer in the air resolves into a half-second of yourself, walking the other way. "Temporal rifts," it says in your own voice, delayed. "The Upper World leaks time. I am you, a moment that did not happen. Take what I learned."',choices:[['Accept the echo',function(s){flag('echo');gain('Echo Shard');restorePP(12);say('Temporal Echo','The Echo Shard cools in your hand, humming with a moment that never was. Your spells sharpen, having been cast once already in a time that unraveled.')}],['Ask what it saw',function(s){say('Temporal Echo','"In one unspun thread you did not free the dragon, and the Nightmare grew a third wing. Choose better than the you that I was."')}]]};
+levels[2].events['8,3']={npc:'Witness of Names',title:'Witness of Names',txt:'An old being with a book of light stops you on the climb. "Mt. Truth is where rule, story, and will agree — and nothing agrees that has no name. Tell me you came here on purpose, and I will write you into what comes after."',choices:[['Give your names to the record',function(s){flag('names');healParty(18);say('Witness of Names','The pen of light moves. Your four names glow on the inside of the mountain. "Now the ending must account for you. The Nightmare cannot pretend you were never here.")')}],['Ask what the record is for',function(s){say('Witness of Names','"A world that can lose anything forgets. A world that cannot lose anything, like this frozen one, cannot grow. The record is how we keep both — name a thing, then let it go.")')}]]};
+levels[2].events['11,3']={npc:'Crown Warden',title:'Crown Warden',txt:'A Warden in tarnished gold guards a side-shrine, the Crown of Zago sketched in chalk on every surface. "The Crown is not jewelry," she warns. "It is authority over one door. Carry it wrong and the door closes on you. Carry it right and even the Queen must let you pass."',choices:[['Learn to carry the Crown',function(s){flag('warden');gain('Crown Sketch');say('Crown Warden','She presses a chalk sketch into your hand, alive with gold code. "Authority is only borrowed. Open the door, then give it back to whoever comes after you." The final seal will know your hand.")')}],['Ask about Zago',function(s){say('Crown Warden','"Zago wore the Crown to rule one perfect city. The city is gone. The Crown remains, looking for someone humble enough to wear it once and set it down.")')}]]};
+/* ============================================================
+   MINDSCAPE DOS II — equipment icons, paper-doll, shops
+   ============================================================ */
+function gearColor(name){var s=ITEM[name]?ITEM[name].slot:'';return s=='weapon'?'#7fdfff':s=='armor'?'#ffd96b':s=='relic'?'#c98cff':s=='charm'?'#8affab':'#9aa6aa'}
+function weaponKind(name){var n=(name||'').toLowerCase();if(/staff|focus|wand|fork|caller/.test(n))return 'staff';if(/bow/.test(n))return 'bow';if(/javelin|spear|lance/.test(n))return 'spear';return 'sword'}
+function itemIcon(name){var slot=ITEM[name]?ITEM[name].slot:'',col=gearColor(name),g='';
+ if(slot=='weapon'){var k=weaponKind(name);
+  if(k=='staff')g='<line x1=14 y1=4 x2=14 y2=25 stroke="'+col+'" stroke-width=2.4/><circle cx=14 cy=6 r=3.6 fill="none" stroke="'+col+'" stroke-width=2/><circle cx=14 cy=6 r=1.5 fill="'+col+'"/>';
+  else if(k=='bow')g='<path d="M9 4 Q22 14 9 24" fill="none" stroke="'+col+'" stroke-width=2.2/><line x1=9 y1=4 x2=9 y2=24 stroke="'+col+'" stroke-width=1/><line x1=8 y1=14 x2=22 y2=14 stroke="'+col+'" stroke-width=1.4/>';
+  else if(k=='spear')g='<line x1=14 y1=3 x2=14 y2=25 stroke="'+col+'" stroke-width=2/><path d="M14 2 L11 9 H17 Z" fill="'+col+'"/>';
+  else g='<path d="M14 2 L17 16 14 20 11 16 Z" fill="'+col+'"/><rect x=9 y=16 width=10 height=2.4 fill="'+col+'"/><rect x=12.6 y=18 width=2.8 height=7 fill="'+col+'"/>';
+ } else if(slot=='armor'){g='<path d="M7 6 L14 9 21 6 V16 Q14 24 7 16 Z" fill="'+col+'" fill-opacity=.25 stroke="'+col+'" stroke-width=2/><path d="M14 9 V22" stroke="'+col+'" stroke-width=1.2/>';
+ } else if(slot=='relic'){g='<path d="M14 4 L21 12 14 24 7 12 Z" fill="'+col+'" opacity=.4/><path d="M14 4 L21 12 14 24 7 12 Z" fill="none" stroke="'+col+'" stroke-width=1.6/><line x1=7 y1=12 x2=21 y2=12 stroke="'+col+'" stroke-width=1/>';
+ } else if(slot=='charm'){g='<path d="M14 5 V11" stroke="'+col+'" stroke-width=1.4/><circle cx=14 cy=16 r=6 fill="none" stroke="'+col+'" stroke-width=2/><circle cx=14 cy=16 r=2 fill="'+col+'"/>';
+ } else g='<circle cx=14 cy=14 r=6 fill="none" stroke="'+col+'" stroke-width=2/>';
+ return svgfix('<svg viewBox="0 0 28 28" width=22 height=22 style="vertical-align:middle;filter:drop-shadow(0 0 3px '+col+')">'+g+'</svg>')}
+function weaponShape(name){var k=weaponKind(name),col=gearColor(name);
+ if(k=='staff')return '<line x1=0 y1=-30 x2=0 y2=40 stroke="#6b4a2a" stroke-width=5/><circle cx=0 cy=-34 r=8 fill="none" stroke="'+col+'" stroke-width=3/><circle cx=0 cy=-34 r=3 fill="'+col+'"/>';
+ if(k=='bow')return '<path d="M-6 -34 Q26 0 -6 34" fill="none" stroke="'+col+'" stroke-width=4/><line x1=-6 y1=-34 x2=-6 y2=34 stroke="#caa" stroke-width=1.5/>';
+ if(k=='spear')return '<line x1=0 y1=-40 x2=0 y2=44 stroke="#6b4a2a" stroke-width=4/><path d="M0 -46 L-6 -32 H6 Z" fill="'+col+'"/>';
+ return '<path d="M0 -40 L7 -8 0 0 -7 -8 Z" fill="'+col+'"/><rect x=-10 y=-8 width=20 height=4 fill="#c9a84c"/><rect x=-3 y=-4 width=6 height=18 fill="#6b4a2a"/>'}
+function paperDoll(p){var arm=p.equip.armor,wep=p.equip.weapon,rel=p.equip.relic,chm=p.equip.charm;
+ var ac=arm?gearColor(arm):'#26402c',acd=arm?'#0c1a10':'#0a140c',rc=rel?gearColor(rel):null;
+ var s='<svg viewBox="0 0 220 300" width="100%" height="100%"><rect width=220 height=300 fill="#020602"/><rect x=6 y=6 width=208 height=288 fill="none" stroke="#1f3a24"/>';
+ s+='<ellipse cx=110 cy=284 rx=46 ry=8 fill="#55ff6622"/>';
+ s+='<path d="M96 190 L88 280 H102 L106 200 Z" fill="'+acd+'" stroke="'+ac+'"/><path d="M124 190 L132 280 H118 L114 200 Z" fill="'+acd+'" stroke="'+ac+'"/>';
+ s+='<path d="M80 104 L50 168 L60 178 L90 120 Z" fill="'+acd+'" stroke="'+ac+'"/><path d="M140 104 L170 168 L160 178 L130 120 Z" fill="'+acd+'" stroke="'+ac+'"/>';
+ s+='<path d="M78 96 Q110 84 142 96 L150 192 Q110 206 70 192 Z" fill="'+ac+'" fill-opacity=.85 stroke="'+ac+'" stroke-width=2/>';
+ s+='<path d="M110 96 V200" stroke="#00000088" stroke-width=1.5/><circle cx=90 cy=120 r=2.5 fill="#00000077"/><circle cx=130 cy=120 r=2.5 fill="#00000077"/><circle cx=90 cy=170 r=2.5 fill="#00000077"/><circle cx=130 cy=170 r=2.5 fill="#00000077"/>';
+ if(rc)s+='<circle cx=110 cy=148 r=11 fill="'+rc+'" opacity=.85/><circle cx=110 cy=148 r=5 fill="#fff" opacity=.7/>';
+ if(chm)s+='<circle cx=110 cy=100 r=5 fill="#ffdc63"/><path d="M104 96 L110 100 116 96" fill="none" stroke="#ffdc63" stroke-width=1.5/>';
+ if(wep)s+='<g transform="translate(168,150) rotate(18)">'+weaponShape(wep)+'</g>';
+ s+='<circle cx=110 cy=56 r=33 fill="#0c1a10" stroke="#ffdc63" stroke-width=1.5/>';
+ s+='<svg x=81 y=24 width=58 height=66 viewBox="0 0 58 66">'+faceParts(p)+'</svg>';
+ s+='<text x=110 y=296 text-anchor=middle fill="#ffdc63" font-family=monospace font-size=13>'+p.name+'</text></svg>';
+ return svgfix(s)}
+
+const SHOPDEF={
+ 0:{name:'Rustpick the Gremlin',flag:'rustpick',
+  greet:'A Gremlin behind a counter welded from car doors squints up at you. "New Earth eats the unprepared. Thin Gold here buys you another sunrise."',
+  story:'"The Dragadar froze the world to stop the dying — and now my tools never wear out, and never improve. A Gremlin needs decay to invent. Break his seal, and let my forge rust again, eh? I will arm you cheap for that."',
+  basic:[['Quazuki Armor',55],['Power Armlet',40],['Tuning Fork',30],['Vial of Holy Water',18],['Cross',15]]},
+ 1:{name:'Sky-Merchant Vell',flag:'vell',
+  greet:'A trader balanced on a wing of frozen lightning tips a hat of cloud. "Up here, prices float, friend. Buy before the wind changes its mind."',
+  story:'"I have sold the same feather in three different years — the rifts keep returning my own caravan to me. Free the world and time will run straight, and I will finally be rid of my own ghost. Worth every coin you spend."',
+  basic:[['Regen Armor',60],['Storm Feather',45],['Bow',25],['Vial of Holy Water',18]]},
+ 2:{name:'The Last Quartermaster',flag:'quart',
+  greet:'An old soldier guards a rack of war-gear at the foot of Mt. Truth. "I armed the ones who came before you. None came back. Let us change that — pick your iron."',
+  story:'"The Crown is a duty, not a prize. Carry the best I can give you to the seal, strike true, and set the Crown down for whoever climbs after. That is the only victory that lasts. The Nightmare fears a well-armed conscience — it will swing softer at you for this talk."',
+  basic:[['Zelio Focus',70],['Will Knot',65],['Shield',20],['Vial of Holy Water',18]]}
+};
+const MASTERWORK=[
+ ['Sunfang Blade',{slot:'weapon',atk:6,str:2,icon:'\u2694'},155,'A blade of compressed dawn; cuts the frozen and the living alike.'],
+ ['Mind Lance',{slot:'weapon',atk:5,mag:5,icon:'\u269B'},180,'Passes through bone and crystal as if they were doubt.'],
+ ['Riftcaller Staff',{slot:'weapon',mag:7,pp:6,icon:'\u2741'},175,'Drinks the leaking time of the Upper World and spits it as fire.'],
+ ['Aegis of Dawn',{slot:'armor',def:7,will:3,icon:'\u26E8'},165,'Plate that remembers the morning the world refused to let go.'],
+ ['Quartz Bulwark',{slot:'armor',def:6,mag:2,spd:1,icon:'\u25C8'},150,'Grown, not forged, in the purity of the Upper World.'],
+ ['Heart of the Scape',{slot:'relic',mag:5,pp:8,will:2,icon:'\u2756'},185,'A shard of the world-crystal; it beats when you are brave.'],
+ ['Wolfmoon Pendant',{slot:'charm',spd:3,atk:3,icon:'\u2727'},150,'Old Earth moonlight, kept for a Lupan who would not forget.']
+];
+MASTERWORK.forEach(function(m){var o={};o[m[0]]=m[1];Object.assign(ITEM,o)});
+function shopRow(name,price,master,lore){var it=ITEM[name]||{},owned=S.inv.includes(name),afford=S.gold>=price,stats=[];
+ ['atk','def','mag','str','spd','will','pp'].forEach(function(k){if(it[k])stats.push(k.toUpperCase()+'+'+it[k])});
+ var btn=owned?'<button disabled style="opacity:.5">Owned</button>':(afford?'<button onclick="shopBuy(\''+name.replaceAll("'","\\'")+'\','+price+')">Buy '+price+'g</button>':'<button disabled style="opacity:.45">'+price+'g</button>');
+ var bd=master?'border:1px solid var(--gold);background:#19140555':'border:1px solid #1f3a24';
+ return '<div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .6rem;margin:.32rem 0;border-radius:6px;'+bd+'"><div style="width:30px;text-align:center">'+itemIcon(name)+'</div><div style="flex:1"><b>'+name+'</b>'+(master?' <span style="color:var(--gold);font-size:.66rem;letter-spacing:.1em">★ MASTERWORK</span>':'')+'<div class=tiny>'+(it.slot||'')+(stats.length?' · '+stats.join(' '):'')+(lore?'<br><span style="opacity:.78">'+lore+'</span>':'')+'</div></div><div>'+btn+'</div></div>'}
+function openShop(l){sfx('open');window._shopLvl=l;var sk=SHOPDEF[l];S.shopStock=S.shopStock||{};
+ if(!S.shopStock[l]){var a=hsh('shop'+l+'_'+((S&&S.seed)||0))%MASTERWORK.length,b=(a+2+l+(((S&&S.seed)||0)%5))%MASTERWORK.length;if(b==a)b=(b+1)%MASTERWORK.length;S.shopStock[l]=[a,b]}
+ var rows='';S.shopStock[l].forEach(function(mi){var m=MASTERWORK[mi];rows+=shopRow(m[0],m[2],true,m[3])});
+ sk.basic.forEach(function(bp){rows+=shopRow(bp[0],bp[1],false,'')});
+ var msg=window._shopMsg||sk.greet;window._shopMsg=null;
+ var html='<div style="display:flex;gap:.8rem;align-items:center;margin-bottom:.4rem"><div style="width:64px;flex:0 0 64px;filter:drop-shadow(0 0 8px var(--gold))">'+sigil(sk.name)+'</div><div style="flex:1"><h2 style="margin:.1rem 0">'+sk.name+'</h2><p class=tiny style="margin:0">'+msg+'</p></div><div style="text-align:right"><div class=tiny>Thin Gold</div><div style="color:var(--gold);font-size:1.3rem">'+S.gold+'</div></div></div>'
+ +'<div>'+rows+'</div>'
+ +'<div class=choices style="margin-top:.5rem"><button onclick="shopTalk('+l+')">Hear their story</button><button onclick="closeModal()">Leave the stall</button></div>';
+ $('#modalTitle').textContent='SHOP / '+sk.name.toUpperCase();$('#modalContent').innerHTML=html;$('#modal').classList.add('on')}
+function shopBuy(name,price){if(S.inv.includes(name)){toast('Already owned.');return}if(S.gold<price){toast('Not enough Thin Gold.');return}S.gold-=price;gain(name);sfx('coin');toast('Bought '+name);openShop(window._shopLvl);updateHUD();draw()}
+function shopTalk(l){var sk=SHOPDEF[l];if(!S.flags[sk.flag])flag(sk.flag);window._shopMsg=sk.story;openShop(l)}
+levels[0].events['3,5']={npc:'Rustpick the Gremlin',title:'Rustpick the Gremlin',txt:SHOPDEF[0].greet,choices:[['Browse the wares',function(s){openShop(0)}],['Hear their story',function(s){shopTalk(0)}],['Move along',function(s){}]]};
+levels[1].events['11,3']={npc:'Sky-Merchant Vell',title:'Sky-Merchant Vell',txt:SHOPDEF[1].greet,choices:[['Browse the wares',function(s){openShop(1)}],['Hear their story',function(s){shopTalk(1)}],['Move along',function(s){}]]};
+levels[2].events['5,3']={npc:'The Last Quartermaster',title:'The Last Quartermaster',txt:SHOPDEF[2].greet,choices:[['Browse the wares',function(s){openShop(2)}],['Hear their story',function(s){shopTalk(2)}],['Move along',function(s){}]]};
+/* ===== MINDSCAPE DOS II — hidden rooms (optional, story rewards) ===== */
+Object.assign(ITEM,{
+ 'Pre-Twilight Codex':{slot:'relic',mag:4,pp:6,will:2,icon:'\u2632'},
+ 'Aether Loom':{slot:'charm',spd:3,mag:2,icon:'\u2638'},
+ 'First Name Sigil':{slot:'relic',will:4,def:3,mag:2,icon:'\u2735'}
+});
+var SECRETS=[
+ {key:'0_11_9',l:0,x:11,y:9,title:'The Sealed Archive',flag:'archive',item:'Pre-Twilight Codex',gold:60,
+  txt:'A section of the wall swings inward on silent hinges. Behind it: a dry vault of Old Earth records, untouched since the Twilight. Crystal-slates hum on the shelves. You lift a Pre-Twilight Codex — knowledge the frozen world tried to forget.'},
+ {key:'1_13_3',l:1,x:13,y:3,title:"The Cloudwright's Workshop",flag:'cloudwright',item:'Aether Loom',pp:10,
+  txt:'You press a knot of cloud and the fog parts into a hidden workshop adrift in the Upper World. Half-finished wings and looms of woven lightning turn slowly here. The maker is long gone, but an Aether Loom still warms to your hand.'},
+ {key:'2_13_5',l:2,x:13,y:5,title:'The Vault of First Names',flag:'firstvault',item:'First Name Sigil',heal:30,
+  txt:'A seam of gold light opens in the mountain. Inside, the first names ever spoken on New Earth are carved in living script. To stand here is to be remembered. You take a First Name Sigil — and feel the mountain learn your name.'}
+];
+function revealSecret(s){cinema('\u2726 Hidden Room \u2726  '+s.title,s.txt);log('<b style="color:#ffdc63">Hidden room found:</b> '+s.title);sfx('seal');try{sfx('sparkle')}catch(e){}rcFlash('#ffdc63');if(s.item)gain(s.item);if(s.gold){S.gold+=s.gold;toast('Cache +'+s.gold);sfx('coin')}if(s.heal)healParty(s.heal);if(s.pp)restorePP(s.pp);if(s.flag)flag(s.flag);updateHUD();draw()}
+function mobileSetup(){if(window._mobileDone)return;window._mobileDone=1;
+ var st=document.createElement('style');
+ st.textContent=`
+  body,button,input,textarea,.tiny,.log,.legend,.eqrow,.flag,kbd{font-family:'Share Tech Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace !important}
+  h1,h2,#brand,.pc b,.hudBox,#where,#turn,#compass,.subtitle b,.difflabel{font-family:'Orbitron','Eurostile','Bahnschrift','Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif !important;letter-spacing:.06em;font-weight:800}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  #brand{background:linear-gradient(90deg,#ffe27a,#ffdc63 45%,#b8ff65);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 18px #ffdc6366;font-weight:800;filter:drop-shadow(0 0 6px #ffdc6344)}
+  .log{font-size:.6rem;line-height:1.36}
+
+  /* ---- bulletproof layout: dock always visible ---- */
+  html,body{height:100dvh !important;min-height:100dvh;overflow:hidden}
+  #app{height:100dvh !important;min-height:0;grid-template-rows:auto minmax(0,1fr) auto !important}
+  #main{min-height:0;overflow:hidden}
+  #dock{flex-shrink:0;display:flex;gap:.5rem;align-items:stretch;padding:.45rem .55rem calc(.45rem + env(safe-area-inset-bottom,0px));border-top:1px solid #55ff6655;background:linear-gradient(180deg,#03150a,#000)}
+  #dock .moves,#dock .acts{flex:1 1 0;min-width:0;align-content:center}
+
+  button{border-radius:11px;font-weight:600;letter-spacing:.03em;background:linear-gradient(180deg,#0f2615,#08160b);border:1px solid #55ff6650;color:#d4ffd9;box-shadow:0 2px 0 #0007,inset 0 0 12px #55ff6612;text-shadow:0 0 7px #55ff6655;transition:transform .07s ease,box-shadow .12s,background .12s;cursor:pointer}
+  button:hover{background:linear-gradient(180deg,#18381f,#0b2012);box-shadow:0 0 16px #55ff6640,inset 0 0 16px #55ff661f}
+  button:active{transform:translateY(2px);box-shadow:inset 0 0 18px #55ff6633}
+  button.hot{background:linear-gradient(180deg,#3c3008,#1c1604);border-color:#ffdc63aa;color:#ffe9a8;text-shadow:0 0 8px #ffdc6388;box-shadow:0 2px 0 #0008,inset 0 0 14px #ffdc6322}
+  button.hot:hover{background:linear-gradient(180deg,#564310,#2a2106);box-shadow:0 0 22px #ffdc6355,inset 0 0 18px #ffdc6333}
+  .moves button,.acts button{min-height:46px;display:flex;align-items:center;justify-content:center;gap:.25em;font-size:.7rem;line-height:1.05;text-align:center}
+  .acts button{border-color:#ffb35066;background:linear-gradient(180deg,#241a06,#120c02);color:#ffd9a0;text-shadow:0 0 7px #ffb35055}
+  .acts button:hover{background:linear-gradient(180deg,#3a2a0a,#1c1304);box-shadow:0 0 16px #ffb35040,inset 0 0 16px #ffb3501f}
+  .moves,.acts{display:flex;gap:.4rem;flex-wrap:wrap;align-items:stretch}
+
+  .pc{border-radius:13px;background:linear-gradient(180deg,#000d,#07150ad8);border:1px solid #55ff6644;box-shadow:inset 0 0 22px #55ff660f}
+  .pc.sel{border-color:#ffdc63aa;box-shadow:0 0 18px #ffdc6333,inset 0 0 22px #ffdc6312}
+  .portrait{border-radius:9px;border:1px solid #48eaff66;box-shadow:inset 0 0 16px #48eaff2a,0 0 11px #48eaff22}
+  .flag{border-radius:6px;border:1px solid #55ff6640;background:#0009;transition:all .12s}
+  .flag.on{border-color:#ffdc63aa;background:#2a200a;color:#ffe9a8;box-shadow:0 0 8px #ffdc6333}
+  .hudBox{border-radius:8px}.modalbox{border-radius:16px}.caption{border-radius:13px}.bossbar{border-radius:11px}.gatebox{border-radius:16px}
+  .legend{font-size:.58rem}
+  #map{height:148px}.log{max-height:148px;overflow-y:auto;overflow-x:hidden}
+  #view{touch-action:none}.crit{color:#fff;text-shadow:0 0 6px #ff0}
+  .credit{color:#ffe9a8;text-align:center;font-size:.78rem;line-height:1.75;margin-top:1.1rem;border-top:1px solid #ffdc6333;padding-top:.85rem}
+  .credit .cash{color:#7CFF8A;text-shadow:0 0 9px #7CFF8A66;font-weight:700}
+  .difflabel{text-align:center;color:#9CFFB0;font-size:.72rem;letter-spacing:.14em;margin:.9rem 0 .2rem}
+  .caption{cursor:pointer;padding-right:2.6rem !important}
+  .capX{position:absolute;top:.5rem;right:.5rem;width:32px;height:32px;min-height:0;padding:0;border-radius:8px;font-size:1.05rem;line-height:1;background:#1a0e0e;border:1px solid #ffdc6377;color:#ffd9a0;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px #0008;z-index:3}
+  .capX:hover{background:#3a1e0e;box-shadow:0 0 14px #ffdc6355}
+  .capHint{margin-top:.55rem;font-size:.62rem;letter-spacing:.1em;color:#ffdc6399;text-align:right}
+  .close{min-height:0;padding:.42rem .8rem;border-radius:9px;font-weight:700;font-size:.76rem;letter-spacing:.05em;background:linear-gradient(180deg,#2a1414,#160a0a);border:1px solid #ff9a9a77;color:#ffd6d6;text-shadow:0 0 7px #ff6a6a55}
+  .close:hover{background:linear-gradient(180deg,#411d1d,#240e0e);box-shadow:0 0 14px #ff6a6a55}
+  #modal.on{cursor:pointer}.modalbox{cursor:default}
+  .viewport{grid-template-rows:minmax(0,1fr) 172px !important}
+  #console{grid-template-columns:minmax(0,1fr) 224px !important}
+  #log{min-height:0;overflow-y:auto;overflow-x:hidden;max-height:none !important}
+  .miniMapWrap{display:flex !important;flex-direction:column;gap:.3rem;padding:.45rem;min-height:0;overflow:hidden}
+  #map{flex:1 1 auto !important;width:100% !important;height:auto !important;min-height:0 !important}
+  .legend{flex:0 0 auto;max-height:58px;overflow:hidden;font-size:.6rem;line-height:1.24}
+  @media (max-height:820px){.viewport{grid-template-rows:minmax(0,1fr) 156px !important}.legend{max-height:42px}}
+  @media (max-height:680px){.viewport{grid-template-rows:minmax(0,1fr) 138px !important}.legend{max-height:28px;font-size:.55rem}}
+  @media (max-width:980px){.viewport{grid-template-rows:minmax(0,1fr) auto !important;min-height:58vh}.miniMapWrap{display:block !important}#map{height:150px !important;flex:none !important}.legend{max-height:none}}
+  #ending{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:4vh 5vw;background:radial-gradient(120% 90% at 50% 0%,#0a1f14 0%,#03100a 55%,#000 100%);overflow:auto}
+  #ending.on{display:flex;animation:endfade .8s ease both}
+  @keyframes endfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .endwrap{max-width:720px;text-align:center;color:#eafff0}
+  .endsig{width:118px;height:118px;margin:0 auto .5rem;opacity:.95;filter:drop-shadow(0 0 18px rgba(201,168,76,.55))}
+  .endsig svg{width:100%;height:100%}
+  .endkicker{letter-spacing:.42em;font-size:.68rem;color:#ffdc63;opacity:.8;margin-bottom:.4rem}
+  .endtitle{font-family:Orbitron,sans-serif;font-size:clamp(2rem,6vw,3.4rem);margin:0;color:#fff;text-shadow:0 0 26px rgba(201,168,76,.45);letter-spacing:.03em;line-height:1.05}
+  .endsub{color:#ffdc63;font-style:italic;margin:.55rem 0 1.15rem;font-size:clamp(.95rem,2.4vw,1.18rem)}
+  .endbody{line-height:1.72;font-size:clamp(.95rem,2.2vw,1.06rem);color:#d6eade;margin:0 auto 1.35rem;max-width:60ch}
+  .endstats{font-size:.78rem;color:#9CFFB0;margin-bottom:1.5rem;opacity:.92}
+  .endstats b{color:#fff}
+  .endbtns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .endbtn,.endbtn2{font-family:Orbitron,sans-serif;font-size:.84rem;letter-spacing:.1em;padding:.72rem 1.5rem;border-radius:10px;cursor:pointer;border:1px solid;min-height:0}
+  .endbtn{background:linear-gradient(180deg,#ffe9a8,#c9a84c);color:#1a1206;border-color:#ffdc63;box-shadow:0 0 18px rgba(201,168,76,.4)}
+  .endbtn:hover{box-shadow:0 0 28px rgba(201,168,76,.7)}
+  .endbtn2{background:transparent;color:#9CFFB0;border-color:rgba(85,255,102,.4)}
+  .endbtn2:hover{background:#0d2616}
+  .endcredit{margin-top:1.5rem;font-size:.62rem;letter-spacing:.06em;color:#7fa890}
+  #devcon{position:fixed;left:0;right:0;bottom:0;z-index:9500;display:none;flex-direction:column;background:rgba(2,10,6,.97);border-top:2px solid #55ff66;box-shadow:0 -8px 30px #000;max-height:44vh}
+  #devcon.on{display:flex}
+  #devconlog{overflow:auto;padding:.6rem .85rem;font-size:.78rem;line-height:1.5;color:#bdf5c8;font-family:'Share Tech Mono',ui-monospace,monospace}
+  #devconlog .dcl{margin:.12rem 0;word-break:break-word}
+  #devconlog .sys{color:#ffdc63}#devconlog .ok{color:#7CFF8A}#devconlog .err{color:#ff8a8a}#devconlog .dcq{color:#9CFFB0}
+  #devconrow{display:flex;align-items:center;gap:.5rem;padding:.5rem .85rem;border-top:1px solid rgba(85,255,102,.2);background:#04140b}
+  #devconrow .dcp{color:#55ff66;font-family:'Share Tech Mono',monospace}
+  #devconin{flex:1;background:transparent;border:none;outline:none;color:#eafff0;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:.92rem;min-height:0}
+
+  /* short laptop heights: shrink controls so dock always fits */
+  @media (max-height:800px){.moves button,.acts button{min-height:40px;font-size:.64rem;padding:.35rem .2rem}#dock{padding:.35rem .45rem calc(.35rem + env(safe-area-inset-bottom,0px))}#map{height:132px}.log{max-height:132px}}
+  @media (max-height:660px){.moves button,.acts button{min-height:34px;font-size:.6rem}#top{padding:.18rem .45rem}#dock{gap:.35rem}}
+  @media (max-height:560px){.moves button,.acts button{min-height:30px;font-size:.56rem;border-radius:8px}}
+
+  /* mobile: stacked thumb pads, dock pinned, panels scroll inside main */
+  @media (max-width:760px){
+   #main{overflow-y:auto;overflow-x:hidden}
+   #dock{flex-direction:column;gap:.4rem}
+   .moves,.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+   .moves button,.acts button{min-height:48px;font-size:.74rem;padding:.4rem .25rem}
+  }
+  @media (max-width:760px) and (max-height:720px){.moves button,.acts button{min-height:42px;font-size:.68rem}}`;
+ document.head.appendChild(st);
+ try{var cap=$('#caption');if(cap)cap.addEventListener('click',function(e){if(e.target.classList&&e.target.classList.contains('capX'))return;hideCaption()});var md=$('#modal');if(md)md.addEventListener('click',function(e){if(e.target===md)closeModal()})}catch(e){}
+ try{resize();draw()}catch(e){}
+ var relayout=function(){try{resize()}catch(e){}};
+ window.addEventListener('resize',relayout);window.addEventListener('orientationchange',relayout);
+ var v=$('#view');if(!v)return;var sx=0,sy=0;
+ v.addEventListener('touchstart',function(e){var t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+ v.addEventListener('touchend',function(e){if(S&&S.battle)return;if($('#modal').classList.contains('on'))return;var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy,ax=Math.abs(dx),ay=Math.abs(dy);
+  if(ax<24&&ay<24)interact();else if(ax>ay)turn(dx>0?1:-1);else move(dy<0?1:-1);e.preventDefault()},{passive:false})}
+/* ===== secret dev console — toggle with the ` (backtick) key ===== */
+(function(){
+ var box=document.createElement('div');box.id='devcon';
+ box.innerHTML='<div id=devconlog></div><div id=devconrow><span class=dcp>&#9658;</span><input id=devconin autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type a command \u2014 try: help"></div>';
+ var inp=null;
+ function out(m,cls){var l=document.getElementById('devconlog');if(!l)return;var d=document.createElement('div');d.className='dcl'+(cls?(' '+cls):'');d.innerHTML=m;l.appendChild(d);l.scrollTop=l.scrollHeight}
+ function toggle(){window._con=!window._con;box.classList.toggle('on',window._con);if(window._con){setTimeout(function(){if(inp)inp.focus()},10);if(!box._greeted){box._greeted=1;out('<b style="color:#ffdc63">MindScape dev console.</b> Commands: <b>warp [1-3]</b>, <b>collect</b>, <b>money</b>, <b>god</b>, <b>reveal</b>, <b>win</b>, <b>help</b>. Press <b>`</b> again to close.','sys')}}}
+ window.toggleConsole=toggle;
+ function run(raw){out('<span class=dcq>&#9658; '+raw.replace(/</g,'&lt;')+'</span>');var t=(raw||'').trim().toLowerCase(),p=t.split(/\s+/),c=p[0];if(!c)return;
+  try{
+   if(c=='help'){out('<b>warp</b> [1-3] \u2014 jump to a floor (warp 3 = Mt. Truth)');out('<b>collect</b> \u2014 grant all four seals so you can reach the end');out('<b>money</b> \u2014 set Thin Gold to 7777');out('<b>god</b> \u2014 toggle invincibility (enemies deal 0)');out('<b>reveal</b> \u2014 reveal the whole floor on the minimap');out('<b>win</b> \u2014 jump straight to the ending');out('<b>close</b> or <b>`</b> \u2014 hide the console')}
+   else if(typeof S==='undefined'||!S){out('Start a game first (close this and press Begin).','err')}
+   else if(c=='warp'){var f=p[1]?Math.max(1,Math.min(3,parseInt(p[1])||1))-1:Math.min(2,S.l+1);S.l=f;S.x=1;S.y=1;S.d=1;S._loggedL=null;S.battle=null;if(typeof RC!=='undefined')RC.lastL=-1;visit();updateHUD();draw();out('Warped to floor '+(f+1)+' \u2014 '+levels[f].name+'.','ok')}
+   else if(c=='collect'||c=='seals'){['crystal','crown','truth','queen'].forEach(function(k){S.quests[k]=true;flag(k)});['Collects Crystal','Crown of Zago','Crystal of Seeing','Queen Seal'].forEach(function(it){if(!has(it))gain(it)});updateHUD();draw();out('All four seals granted. Head to the Final Seal (\u25BC) on floor 3.','ok')}
+   else if(c=='money'||c=='gold'||c=='cash'){S.gold=7777;updateHUD();draw();out('Thin Gold set to <b>7777</b>. \uD83D\uDCB0','ok')}
+   else if(c=='god'){S._god=!S._god;S.party.forEach(function(pp){pp.hp=pp.maxhp;pp.pp=pp.maxpp});updateHUD();draw();out('God mode '+(S._god?'<b>ON</b> \u2014 enemies deal 0 damage':'OFF')+'. Party restored.','ok')}
+   else if(c=='reveal'){var L=levels[S.l];for(var y=0;y<L.map.length;y++)for(var x=0;x<L.map[y].length;x++)S.visited[S.l+','+x+','+y]=1;draw();out('Floor '+(S.l+1)+' revealed.','ok')}
+   else if(c=='win'){['crystal','crown','truth','queen'].forEach(function(k){S.quests[k]=true});S.quests.nightmare=true;toggle();endGame();out('Jumped to ending.','ok')}
+   else if(c=='close'||c=='exit'||c=='quit'){toggle()}
+   else {out('Unknown command: <b>'+c.replace(/</g,'&lt;')+'</b> \u2014 type <b>help</b>','err')}
+  }catch(err){out('Error: '+err.message,'err')}}
+ function attach(){if(document.body){document.body.appendChild(box);inp=document.getElementById('devconin');inp.addEventListener('keydown',function(e){e.stopPropagation();if(e.key=='Enter'){run(inp.value);inp.value=''}else if(e.key=='Escape'){toggle()}})}else setTimeout(attach,40)}
+ addEventListener('keydown',function(e){if(e.key=='`'||e.code=='Backquote'){e.preventDefault();e.stopImmediatePropagation();toggle();return}if(window._con&&inp&&e.target!==inp){e.stopImmediatePropagation()}},true);
+ attach();
+})();
+let S, view, vctx, mapc, mctx, starc, stx, audio=null, sound=false, toastTimer=0, selected=0, t=0;
+function hsh(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+var _agN=0;
+var ANGELIC=[{n:'Un',d:'M18,82 L18,18 L58,18 L82,40 L58,62 L82,82'},{n:'Pa',d:'M16,78 L48,18 L80,78 L48,58 L48,18'},{n:'Veh',d:'M20,18 L20,82 L70,82 L70,18 L20,50 L70,50'},{n:'Gal',d:'M18,18 L82,18 L50,50 L82,82 L18,82'},{n:'Graph',d:'M18,22 L60,22 L82,50 L60,78 L18,78 L40,50 L60,50'},{n:'Or',d:'M18,18 L50,82 L82,18 L18,52 L82,52'},{n:'Ged',d:'M22,18 L22,82 L78,82 L52,58 L78,18'},{n:'Na',d:'M18,18 L82,18 L18,82 L82,82'},{n:'Gon',d:'M50,18 L18,50 L50,82 L82,50 L50,18'},{n:'Ur',d:'M18,18 L82,18 L50,50 L50,82'},{n:'Tal',d:'M18,18 L50,18 L82,50 L50,82 L18,82'},{n:'Drux',d:'M22,18 L78,18 L22,82 L78,82 L22,50 L60,50'},{n:'Med',d:'M18,78 L50,18 L82,78 L18,42 L82,42'},{n:'Mals',d:'M18,18 L82,50 L18,82 L50,18 L82,82'},{n:'Ger',d:'M18,18 L18,82 L82,18 L82,82 L18,50 L82,50'},{n:'Don',d:'M18,20 L50,20 L50,80 L82,80 L82,20'},{n:'Fam',d:'M18,18 L82,18 L50,50 L18,82 L82,82'},{n:'Gisg',d:'M24,18 L24,82 L76,50 L24,18 L76,82'},{n:'Van',d:'M18,18 L82,18 L18,82 L82,82 L50,18 L50,82'},{n:'Pal',d:'M18,18 L82,18 L50,50 L18,82 L82,82 L50,50'},{n:'Ceph',d:'M18,18 L82,18 L50,50 L82,82 L18,82 L50,50'}];
+function angelicGlyph(i,sz){var g=ANGELIC[((i%ANGELIC.length)+ANGELIC.length)%ANGELIC.length],id='ag'+(_agN++);
+ return svgfix('<svg viewBox="0 0 120 120"'+(sz?' width='+sz+' height='+sz:'')+'><defs><linearGradient id="'+id+'" x1=0 y1=0 x2=1 y2=1><stop offset=0 stop-color="#ffe58d"/><stop offset=.55 stop-color="#ffd06a"/><stop offset=1 stop-color="#c78dff"/></linearGradient></defs>'
+ +'<rect x=10 y=10 width=100 height=100 rx=15 fill="#0a0d07" stroke="#6d5a2a" stroke-width=1.4/>'
+ +'<rect x=10 y=10 width=100 height=100 rx=15 fill="none" stroke="#ffdc6322" stroke-width=3/>'
+ +'<circle cx=60 cy=60 r=36 fill="none" stroke="#7a6530" stroke-width=1.2 stroke-dasharray="5 4"/>'
+ +'<circle cx=60 cy=60 r=45 fill="none" stroke="#c78dff22" stroke-width=1/>'
+ +'<path d="'+g.d+'" fill="none" stroke="url(#'+id+')" stroke-width=4.6 stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px #ffdc6355)"/>'
+ +'<title>'+g.n+'</title></svg>')}
+function sigil(name){return angelicGlyph(hsh(name))}
+function angelicName(name){return ANGELIC[hsh(name)%ANGELIC.length].n}
+function svgfix(s){return s.replace(/\/>/g,' />')}
+function faceParts(p){var n=p.name,parts='';
+ if(n=='Zelio'){parts='<defs><linearGradient id="z_s" x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="#ffd0a0"/><stop offset=1 stop-color="#d6875a"/></linearGradient><linearGradient id="z_h" x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="#2c41a0"/><stop offset=1 stop-color="#0e1846"/></linearGradient><radialGradient id="z_e" cx=.4 cy=.35 r=.7><stop offset=0 stop-color="#d4fbff"/><stop offset=1 stop-color="#2aa8d8"/></radialGradient></defs>'
+  +'<path d="M6 32Q29 3 52 32v34H6z" fill="url(#z_h)"/><path d="M11 32Q29 11 47 32q0 18-6 26-12 7-24 0-6-8-6-26z" fill="#16245c"/>'
+  +'<path d="M14 30q15-9 30 0" stroke="#4257b0" stroke-width=1 fill="none" opacity=.7/>'
+  +'<ellipse cx=29 cy=35 rx=12.5 ry=14.5 fill="url(#z_s)"/><path d="M16.5 31q12.5-7 25 0" fill="#0a0e22" opacity=.5/>'
+  +'<path d="M19 34q4-2.5 8-.5M31 33.5q4-2 8 .5" stroke="#7a5230" stroke-width=1.2 fill="none"/>'
+  +'<ellipse cx=23.5 cy=37 rx=3.4 ry=2.8 fill="#fff"/><ellipse cx=34.5 cy=37 rx=3.4 ry=2.8 fill="#fff"/><circle cx=23.9 cy=37 r=2.1 fill="url(#z_e)"/><circle cx=34.9 cy=37 r=2.1 fill="url(#z_e)"/><circle cx=24.5 cy=36.2 r=.7 fill="#fff"/><circle cx=35.5 cy=36.2 r=.7 fill="#fff"/>'
+  +'<path d="M25 45q4 2.5 8 0" stroke="#9a5a38" stroke-width=1.6 fill="none"/><path d="M16 23q13-9 26 0" stroke="#ffe27a" stroke-width=2 fill="none"/><path d="M27 21l2-4 2 4-2 2.4z" fill="#ffdc63"/><circle cx=29 cy=19.6 r=1.3 fill="#fff"/>';}
+ else if(n=='Iron Jack'){parts='<defs><radialGradient id="j_s" cx=.5 cy=.4 r=.75><stop offset=0 stop-color="#5cc763"/><stop offset=1 stop-color="#247a2e"/></radialGradient><linearGradient id="j_g" x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="#caa24c"/><stop offset=1 stop-color="#6b4a16"/></linearGradient></defs>'
+  +'<path d="M7 31L1 20l11 4z" fill="#2f7a36"/><path d="M51 31l6-11-11 4z" fill="#2f7a36"/><path d="M8 30l-3-6 6 3z" fill="#1d5a24"/><path d="M50 30l3-6-6 3z" fill="#1d5a24"/>'
+  +'<ellipse cx=29 cy=37 rx=15.5 ry=15.5 fill="url(#j_s)"/><path d="M14 40q15 9 30 0" stroke="#1c5a26" stroke-width=1 fill="none" opacity=.6/>'
+  +'<rect x=9 y=17 width=40 height=8 rx=4 fill="#15150f"/><circle cx=20 cy=21 r=6.4 fill="url(#j_g)" stroke="#ffdc63" stroke-width=1.2/><circle cx=38 cy=21 r=6.4 fill="url(#j_g)" stroke="#ffdc63" stroke-width=1.2/><circle cx=22 cy=19 r=2 fill="#dff6ff" opacity=.8/><circle cx=40 cy=19 r=2 fill="#dff6ff" opacity=.8/>'
+  +'<ellipse cx=23 cy=37 rx=3.2 ry=3.6 fill="#fff"/><ellipse cx=35 cy=37 rx=3.2 ry=3.6 fill="#fff"/><circle cx=23.6 cy=37.4 r=1.6 fill="#111"/><circle cx=35.6 cy=37.4 r=1.6 fill="#111"/><circle cx=24.2 cy=36.6 r=.6 fill="#fff"/><circle cx=36.2 cy=36.6 r=.6 fill="#fff"/>'
+  +'<path d="M21 46q8 6 16 0" stroke="#123a16" stroke-width=2 fill="none"/><path d="M30 46l3 4.5 2.4-4.5z" fill="#fff"/><path d="M28 9v6.5" stroke="#ffdc63" stroke-width=1.4/><circle cx=28 cy=8 r=2.1 fill="#ff3355"/><circle cx=28 cy=8 r=3.4 fill="#ff335577"/>';}
+ else if(n=='Moon Wolf'){parts='<defs><linearGradient id="w_f" x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="#aab2bc"/><stop offset=1 stop-color="#6a727c"/></linearGradient><radialGradient id="w_e" cx=.4 cy=.4 r=.7><stop offset=0 stop-color="#ffe9a8"/><stop offset=1 stop-color="#e8901e"/></radialGradient></defs>'
+  +'<path d="M9 27L5 6l15 13z" fill="#6b7480"/><path d="M49 27l4-21-15 13z" fill="#6b7480"/><path d="M10 25L9 11l8 8z" fill="#363c44"/><path d="M48 25l1-14-8 8z" fill="#363c44"/>'
+  +'<path d="M12 30Q29 13 46 30q0 19-9 25-8 6-8 6t-8-6q-9-6-9-25z" fill="url(#w_f)"/><path d="M29 22v34" stroke="#5a626c" stroke-width=.8 opacity=.5/><path d="M20 30q9-5 18 0" stroke="#c9d0d8" stroke-width=1 opacity=.6 fill="none"/>'
+  +'<path d="M23 40Q29 37 35 40l-2.5 10-3.5 3-3.5-3z" fill="#d3dae2"/><path d="M25.5 41q3.5-1.5 7 0" stroke="#9aa2ac" stroke-width=.7 fill="none"/><ellipse cx=29 cy=50 rx=3.2 ry=2.3 fill="#15171a"/><circle cx=28 cy=49 r=.7 fill="#444"/>'
+  +'<path d="M17 32l9 2.5M41 32l-9 2.5" stroke="#15171a" stroke-width=1.3 fill="none"/>'
+  +'<ellipse cx=23 cy=37 rx=3.4 ry=2.8 fill="url(#w_e)"/><ellipse cx=35 cy=37 rx=3.4 ry=2.8 fill="url(#w_e)"/><ellipse cx=23 cy=37 rx=1 ry=2.2 fill="#1a1200"/><ellipse cx=35 cy=37 rx=1 ry=2.2 fill="#1a1200"/><circle cx=24 cy=36 r=.6 fill="#fff"/><circle cx=36 cy=36 r=.6 fill="#fff"/>'
+  +'<path d="M19 33l5 1.5" stroke="#cfd6de" stroke-width=.7 opacity=.6/>';}
+ else if(n=='No-See'){parts='<defs><radialGradient id="n_b" cx=.5 cy=.4 r=.75><stop offset=0 stop-color="#10302a"/><stop offset=1 stop-color="#03110d"/></radialGradient><radialGradient id="n_e" cx=.4 cy=.4 r=.7><stop offset=0 stop-color="#d6fbff"/><stop offset=1 stop-color="#2ec6ff"/></radialGradient></defs>'
+  +'<path d="M10 30Q29 6 48 30v34H10z" fill="url(#n_b)" opacity=.92/><path d="M14 30Q29 13 44 30v28H14z" fill="#05231a" opacity=.55/>'
+  +'<path d="M15 30Q29 17 43 30" stroke="#48eaff" stroke-width=1 fill="none" stroke-dasharray="2 3" opacity=.55/><path d="M13 36q3 14 16 22q13-8 16-22" stroke="#0f5a44" stroke-width=.8 fill="none" opacity=.5/>'
+  +'<ellipse cx=29 cy=37 rx=11.5 ry=13.5 fill="#0a1816" opacity=.55/>'
+  +'<rect x=15 y=42 width=28 height=11 rx=5 fill="#0c1c16" stroke="#1f5a44" stroke-width=1/><path d="M17 47h24" stroke="#0a3a2c" stroke-width=1/><path d="M19 45q10 3 20 0" stroke="#1f5a44" stroke-width=.7 opacity=.6 fill="none"/>'
+  +'<ellipse cx=34 cy=34 rx=4.4 ry=3.2 fill="#02100c"/><ellipse cx=34 cy=34 rx=2.4 ry=1.9 fill="url(#n_e)"/><circle cx=34.8 cy=33.4 r=.7 fill="#fff"/><ellipse cx=22.5 cy=34 rx=3 ry=2.3 fill="#05140f" opacity=.7/><circle cx=22.5 cy=34 r=.8 fill="#2ec6ff" opacity=.5/>'
+  +'<path d="M8 52q6 6 21 9q15-3 21-9" stroke="#03130e" stroke-width=2 fill="none" opacity=.6/>';}
+ else {var h=hsh(p.name+p.race),skin=['#ffc47a','#eaa76b','#c0814f','#dfe6ea','#9affd6','#d8b3ff'][h%6],hair=['#2a1a0e','#6b3a1f','#e6d06c','#5ad6ff','#ff5577','#7CFF8A'][(h>>3)%6],eye=['#7CFF8A','#5ad6ff','#ffdc63','#ff5577'][(h>>7)%4];parts='<path d="M8 34Q29 2 50 34v30H8z" fill="'+hair+'"/><ellipse cx=29 cy=33 rx=15 ry=17 fill="'+skin+'"/><ellipse cx=22 cy=32 rx=3 ry=2.4 fill="#fff"/><ellipse cx=36 cy=32 rx=3 ry=2.4 fill="#fff"/><circle cx=22 cy=32 r=1.4 fill="'+eye+'"/><circle cx=36 cy=32 r=1.4 fill="'+eye+'"/><path d="M23 43q6 4 12 0" stroke="#3a1212" stroke-width=2 fill="none"/>';}
+ return parts}
+function portrait(p){var h=hsh(p.name+p.race),id='pg'+(h%9999);
+ var wrap='<svg viewBox="0 0 58 66"><defs><radialGradient id="'+id+'" cx="50%" cy="28%" r="92%"><stop offset="0" stop-color="#16361f"/><stop offset="1" stop-color="#030c07"/></radialGradient></defs><rect width=58 height=66 fill="url(#'+id+')"/><rect x=2 y=2 width=54 height=62 rx=3 fill="none" stroke="#55ff66" opacity=.85/>';
+ var label='<rect x=2 y=54 width=54 height=10 fill="#000a"/><text x=29 y=61.5 text-anchor=middle font-size=7.5 font-family=monospace fill="#ffdc63" letter-spacing=1>'+p.clan[0]+p.skill[0]+'</text></svg>';
+ return svgfix(wrap+faceParts(p)+label)}
+function fresh(){let party=JSON.parse(JSON.stringify(DATA.party)).map((p,i)=>{p.maxhp=p.hp;p.maxpp=p.pp;p.xp=0;p.lvl=1;p.equip={weapon:['Spear','Mega Arm','Shasma Sword','Bow'][i]||'',armor:['Simple Armor','Shield','Regen Armor','Invis Armor'][i]||'',relic:i==0?'Collects Crystal':'',charm:i==2?'Cross':''};return p});return {x:1,y:1,d:1,l:0,turn:0,gold:85,diff:(window._chosenDiff!=null?window._chosenDiff:1),seed:Math.floor(Math.random()*1e9),score:0,secrets:{},searched:{},inv:['Canteen','Rope','Backpack','Spear','Mega Arm','Shasma Sword','Bow','Simple Armor','Shield','Regen Armor','Invis Armor','Collects Crystal','Cross','Vial of Holy Water','Javelins'],quests:{crystal:false,crown:false,truth:false,queen:false,oracle:false,weather:false,nightmare:false},flags:{},done:{},visited:{},log:[],party,battle:null,force:0,won:false,maxDepth:0,npcUsed:{},npcGone:{}}}
+function init(){view=$('#view');vctx=view.getContext('2d');mapc=$('#map');mctx=mapc.getContext('2d');starc=$('#stars');stx=starc.getContext('2d');$('#gateSig').innerHTML=sigil('MindScape');S=fresh();RC.lastL=S.l;RC.camX=S.x+0.5;RC.camY=S.y+0.5;RC.camA=dirAngle(S.d);resize();draw();try{mobileSetup()}catch(e){}requestAnimationFrame(rcLoop)}
+function startGame(){S=fresh();$('#gate').classList.add('off');bootAudio();cinema('Nuclear Twilight',DATA.story.nuclear);log('Booted the party into <b>New Earth</b>. Find the seals, talk to beings, equip the party, and reach Mt. Truth.');visit();draw()}
+function bootAudio(){try{if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=0.5;master.connect(audio.destination);}if(audio.state=='suspended')audio.resume();}catch(e){}}
+function tone(f=220,d=.08,type='square',gain=.045){if(!sound||!audio)return;let o=audio.createOscillator(),g=audio.createGain(),now=audio.currentTime;o.type=type;o.frequency.setValueAtTime(f,now);g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(0.002,gain),now+0.008);g.gain.exponentialRampToValueAtTime(0.0001,now+d+0.02);o.connect(g);g.connect(master||audio.destination);o.start(now);o.stop(now+d+0.05)}
+function toggleSound(){bootAudio();sound=!sound;$('#soundBtn').textContent=sound?'Sound On':'Sound';if(sound){musEnsure();musScene(S.battle?'B':('L'+S.l))}else{musStop()}tone(260,.1)}
+function log(s){S.log.unshift('<p>'+s+'</p>');S.log=S.log.slice(0,14);$('#log').innerHTML=S.log.join('')}
+function toast(s){clearTimeout(toastTimer);$('#toast').textContent=s;$('#toast').classList.add('on');toastTimer=setTimeout(()=>$('#toast').classList.remove('on'),1900)}
+function level(){return levels[S.l]}function map(){return level().map}function cell(x,y){let m=map();return (m[y]&&m[y][x])||'#'}function pass(x,y){return cell(x,y)!='#'}function key(x=S.x,y=S.y,l=S.l){return l+','+x+','+y}function evKey(x=S.x,y=S.y){return x+','+y}function eventAt(x=S.x,y=S.y){return level().events[evKey(x,y)]}function has(item){return S.inv.includes(item)||S.party.some(p=>Object.values(p.equip||{}).includes(item))}
+function gain(item){if(item&&!S.inv.includes(item)){S.inv.push(item);toast('Found '+item);sfx('pickup')}}function flag(f){var n=!S.flags[f];S.flags[f]=true;if(n){toast('Story flag: '+f);sfx('seal')}}function healParty(n){S.party.forEach(p=>p.hp=Math.min(p.maxhp,p.hp+n));toast('Party healed +'+n);sfx('heal')}function restorePP(n){S.party.forEach(p=>p.pp=Math.min(p.maxpp+(gearBonus(p).pp||0),p.pp+n));toast('Power Points +'+n);sfx('heal')}function say(title,txt){cinema(title,txt);log('<b>'+title+'</b>: '+txt);updateHUD();draw()}
+function visit(){S.visited[key()]=1;if(S._loggedL!==S.l){S._loggedL=S.l;levelIntro()}var ev=eventAt();if(ev&&!S.done[key()]&&(ev.auto||ev.stairs!=null||ev.win||ev.battle||ev.item||ev.gold||ev.quest))runEvent(ev);updateHUD()}
+function runEvent(ev,force){let k=key();
+ if(ev.npc){window._curEv=ev;window._curEvK=evKey();window._curNpcK=k;return dialogue(ev)}
+ if(ev.need&&!S.flags[ev.need]&&!S.quests[ev.need]){cinema('The Way Is Sealed',(typeof NEEDHINT!=='undefined'&&NEEDHINT[ev.need])||('You must gain '+ev.need+' before this opens.'));toast('Sealed — '+ev.need+' required');return}
+ if(ev.stairs!=null){sfx('descend');var dest=ev.stairs;cinema(ev.title,ev.txt);log('<b>'+ev.title+'</b> — descending to the next world…');setTimeout(function(){S.l=dest;S.x=1;S.y=1;S.d=1;S.maxDepth=Math.max(S.maxDepth||0,dest);visit();draw()},650);return}
+ if(ev.win){cinema(ev.title,ev.txt);setTimeout(finalGate,500);return}
+ if(S.done[k]){if(force)cinema(ev.title,ev.txt);return}
+ S.done[k]=1;cinema(ev.title,ev.txt);log('<b>'+ev.title+'</b>: '+(ev.txt||'').slice(0,160)+'…');
+ if(ev.gold){S.gold+=ev.gold;toast('Thin Gold +'+ev.gold);sfx('coin')}
+ if(ev.item)gain(ev.item);
+ if(ev.quest){S.quests[ev.quest]=true;sfx('seal')}
+ if(ev.heal)healParty(ev.heal);
+ if(ev.pp)restorePP(ev.pp);
+ if(ev.battle)startBattle(ev.battle,true);
+ updateHUD();draw()}
+function dialogue(ev){window._curEv=ev;window._curEvK=evKey();window._curNpcK=key();var who=ev.npc||ev.title;var portrait=beingPortrait(who);var glyph=sigil(who);var used=(S.npcUsed&&S.npcUsed[key()])||[];var choices=ev.choices||[['Continue',function(){}]];var btns=choices.map(function(c,i){return used.indexOf(i)>=0?('<button disabled style="opacity:.45;cursor:default">\u2713 '+c[0]+'</button>'):('<button onclick="choose('+i+')">'+c[0]+'</button>')}).join('')+'<button class=blue onclick="closeModal()">Leave</button>';window._choices=choices.map(function(c){return c[1]});var html=`<div class=talk><div style="display:flex;gap:1rem;align-items:flex-start"><div style="width:120px;flex:0 0 120px">${portrait}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:.55rem;margin-bottom:.2rem"><div style="width:34px;flex:0 0 34px;opacity:.92">${glyph}</div><h2 style="margin:0">${ev.title}</h2></div><p style="margin:.4rem 0 0">${ev.txt}</p></div></div><div class=choices>${btns}</div></div>`;$('#modalTitle').textContent='STORY BEING';$('#modalContent').innerHTML=html;$('#modal').classList.add('on')}
+function choose(i){var fn=window._choices&&window._choices[i];var ev=window._curEv,evK=window._curEvK,npcK=window._curNpcK;closeModal();
+ var hp0=S.party.reduce(function(a,p){return a+p.hp},0),fl0=Object.keys(S.flags).length,inv0=S.inv.length,gold0=S.gold,bat0=!!S.battle;
+ if(fn)fn(S);
+ var changed=(S.gold!=gold0)||(S.inv.length!=inv0)||(Object.keys(S.flags).length!=fl0)||(S.party.reduce(function(a,p){return a+p.hp},0)!=hp0)||((!!S.battle)!=bat0);
+ var label=(ev&&ev.choices&&ev.choices[i]&&ev.choices[i][0])||'';
+ var isCost=/\bpay\b|\bgold\b|\d/i.test(label),isInfo=/^(ask|leave|decline|refuse|stay)/i.test(label);
+ var succeeded=changed||isInfo, failedCost=isCost&&!changed;
+ if(ev&&ev.npc&&succeeded&&!failedCost){
+  S.npcUsed=S.npcUsed||{};S.npcUsed[npcK]=S.npcUsed[npcK]||[];
+  if(S.npcUsed[npcK].indexOf(i)<0)S.npcUsed[npcK].push(i);
+  if(ev.choices&&S.npcUsed[npcK].length>=ev.choices.length){
+   S.npcGone=S.npcGone||{};S.npcGone[npcK]=1;
+   if(levels[S.l]&&levels[S.l].events[evK])delete levels[S.l].events[evK];
+   toast((ev.npc||'The being')+' has nothing left to give, and fades from the dungeon.');
+   try{sfx('sparkle')}catch(e){}
+  }
+ }
+ S.done[key()]=1;updateHUD();draw()}
+function cinema(title,txt){let c=$('#caption');c.innerHTML='<button class=capX onclick="hideCaption()" aria-label="Close">\u2715</button><b style="color:var(--gold);letter-spacing:.12em">'+title+'</b><br>'+txt+'<div class=capHint>tap anywhere to dismiss</div>';c.classList.add('on');try{sfx('open')}catch(e){}clearTimeout(window._capT);window._capT=setTimeout(function(){c.classList.remove('on')},6500)}
+function hideCaption(){clearTimeout(window._capT);var c=$('#caption');if(c)c.classList.remove('on')}
+function move(n){if(S.battle)return toast('Battle locked. Fight, cast, or use item.');if($('#modal').classList.contains('on'))return;if(RC.anim){RC.queued=function(){move(n)};return}var d=DIRS[S.d],nx=S.x+d[0]*n,ny=S.y+d[1]*n;if(pass(nx,ny)){RC.kind='move';RC.fromX=S.x+0.5;RC.fromY=S.y+0.5;RC.toX=nx+0.5;RC.toY=ny+0.5;RC.tgtX=nx;RC.tgtY=ny;RC.fromA=dirAngle(S.d);RC.animT=0;RC.animDur=0.16;RC.anim=1;rcFootstep()}else{RC.kind='bump';RC.fromX=S.x+0.5;RC.fromY=S.y+0.5;RC.fromA=dirAngle(S.d);RC.bdx=d[0]*n*0.5;RC.bdy=d[1]*n*0.5;RC.animT=0;RC.animDur=0.12;RC.anim=1;RC.queued=null;tone(72,.06,'square',.06);toast('Wall.');shake()}}
+function turn(n){if(S.battle)return toast('Battle locked.');if($('#modal').classList.contains('on'))return;if(RC.anim){RC.queued=function(){turn(n)};return}RC.kind='turn';RC.fromX=S.x+0.5;RC.fromY=S.y+0.5;RC.fromA=dirAngle(S.d);RC.toA=RC.fromA+n*Math.PI/2;RC.tgtD=(S.d+n+4)%4;RC.animT=0;RC.animDur=0.14;RC.anim=1;tone(170,.05,'sine',.03)}
+function look(){let ev=eventAt();if(ev)return runEvent(ev,true);let f=frontEvent();if(f)return cinema('Ahead: '+f.ev.title,f.ev.txt);if(Math.random()<0.42){let liv=living();if(liv.length){let p=pick(liv);return cinema(p.name+' speaks',pick(BANTER[p.name]||BANTER._default))}}cinema('Search / Look',pick(LOOKS))}
+function interact(){let ev=eventAt();if(ev)return runEvent(ev,true);let f=frontEvent();if(f){let[x,y]=f.pos;S.x=x;S.y=y;return runEvent(f.ev,true)}
+ S.secrets=S.secrets||{};var sec=SECRETS.find(s=>s.l==S.l&&s.x==S.x&&s.y==S.y);if(sec&&!S.secrets[sec.key]){S.secrets[sec.key]=1;revealSecret(sec);return}
+ S.searched=S.searched||{};let sk=key();if(S.searched[sk])return look();S.searched[sk]=1;
+ if(Math.random()<.45){let item=pick(['Thin Gold','Vial of Holy Water','Cross','Tuning Fork','Power Armlet','Simple Armor']);if(item=='Thin Gold'){S.gold+=roll(20)+10;toast('Thin Gold found');sfx('coin')}else gain(item);log('Search finds <b>'+item+'</b>.')}else look();updateHUD()}
+function frontEvent(){for(let d=1;d<3;d++){let [x,y]=rel(d,0);let ev=level().events[x+','+y];if(ev)return {ev,pos:[x,y]}}return null}
+function startBattle(name,boss=false){let base=DATA.monsters[name]||{hp:22+(hsh(name)%24),atk:4+(hsh(name)%7),xp:16,text:'A creature from the MindScape codex attacks.'};let dm=[0.8,1,1.3][S&&S.diff!=null?S.diff:1]||1;let hp=base.hp+(boss?28:0),atk=base.atk+(boss?2:0);if(name=='Queen Thrasher'){if(S.flags.wolf)hp-=18;if(S.flags.fairy)atk-=2;if(S.flags.cloud)hp-=12;if(S.flags.ninja)hp-=16;if(S.flags.beast)atk-=2;if(S.flags.bone)hp-=8;if(S.flags.song)atk-=1}if(name=='Nightmare Staff'){hp=120-(S.flags.dragon?22:0)-(S.flags.gremlin?14:0)-(S.flags.zmaster?16:0)-(S.flags.names?10:0);atk=13-(S.flags.witness?2:0)-(S.flags.monk?2:0)-(S.flags.hypno?1:0)-(S.flags.warden?1:0)-(S.flags.quart?1:0)}hp=Math.round(hp*dm);atk=Math.round(atk*(0.86+dm*0.14));let xp=Math.round((base.xp+(boss?40:0))*(0.9+dm*0.2));S.battle={name,hp:Math.max(10,hp),max:Math.max(10,hp),atk:Math.max(2,atk),xp:xp,text:base.text||'MindScape enemy.',boss:boss||base.boss};if(boss)try{sfx('boom')}catch(e){}cinema('Encounter: '+name,S.battle.text);log('<b>Encounter:</b> '+name+' appears.');updateBattle();draw()}
+function living(){return S.party.filter(p=>p.hp>0)}function gearBonus(p){let b={atk:0,def:0,mag:0,str:0,spd:0,will:0,pp:0};for(let it of Object.values(p.equip||{})){let o=ITEM[it];if(!o)continue;for(let k in b)b[k]+=o[k]||0}return b}function stat(p,k){return (p[k]||0)+(gearBonus(p)[k]||0)}function armorDef(p){return gearBonus(p).def||0}
+function attack(){if(!S.battle)return interact();var dmg=0,crit=Math.random()<0.16;living().forEach(p=>{var d=roll(6)+Math.floor(stat(p,'str')/2)+p.lvl+(gearBonus(p).atk||0);dmg+=d});if(crit)dmg=Math.floor(dmg*1.85);S.battle.hp-=dmg;log((crit?'<b style="color:#fff;text-shadow:0 0 6px #ff0">CRITICAL!</b> ':'')+'Party attacks <b>'+S.battle.name+'</b> for '+dmg+'.');if(crit){sfx('crit');rcFlash('#ffffff')}else{sfx('hit');rcFlash('#ff5a6e')}rcHit();rcFloat('-'+dmg,crit?'#ffec70':'#ff9a5a',crit);afterPlayer()}
+function castSpell(sp){if(!S.battle&&sp!='Heal'&&sp!='Force Field')return toast('No target.');var caster=S.party.find(p=>p.hp>0&&p.pp>0)||living()[0];if(!caster)return gameOver();var gb=gearBonus(caster);
+ if(sp=='Heal'){var hc=3;if(caster.pp<hc)return toast('Not enough PP');caster.pp-=hc;var h=roll(6)+roll(6)+stat(caster,'mag');var tg=living().sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp)[0];tg.hp=Math.min(tg.maxhp,tg.hp+h);log(caster.name+' casts <b>Heal</b> on '+tg.name+' for '+h+'.');sfx('heal');rcFloat('+'+h,'#7CFF8A');updateHUD();draw();return}
+ if(sp=='Force Field'){var fc=4;if(caster.pp<fc)return toast('Not enough PP');caster.pp-=fc;S.force=3+(has('Tuning Fork')?1:0);log(caster.name+' raises <b>Force Field</b>.');sfx('shield');updateHUD();draw();return}
+ var cost=5;if(caster.pp<cost)return toast('Not enough PP');caster.pp-=cost;var crit=Math.random()<0.16;var dmg=roll(10)+roll(6)+stat(caster,'mag')+(sp.includes('Zelios')?5:0)+(S.flags.cloud?2:0)+(S.flags.zmaster?4:0);if(crit)dmg=Math.floor(dmg*1.85);S.battle.hp-=dmg;log((crit?'<b style="color:#fff;text-shadow:0 0 6px #c9f">CRITICAL!</b> ':'')+caster.name+' casts <b>'+sp+'</b> for '+dmg+'.');sfx(crit?'crit':'spell');rcFlash(crit?'#ffffff':'#9bd6ff');rcHit();rcFloat('-'+dmg,crit?'#d9c2ff':'#9bd6ff',crit);afterPlayer()}
+function useItem(){if(!S.battle)return openEquip();if(has('Vial of Holy Water')){let dmg=18;S.battle.hp-=dmg;let i=S.inv.indexOf('Vial of Holy Water');if(i>=0)S.inv.splice(i,1);log('Vial of Holy Water burns <b>'+S.battle.name+'</b> for '+dmg+'.');afterPlayer()}else toast('No combat item ready.')}
+function afterPlayer(){if(!S.battle)return;if(S.battle.hp<=0)return winBattle();monsterTurn();updateBattle();updateHUD();draw()}
+function monsterTurn(){let b=S.battle,t=pick(living());if(!t)return gameOver();let dmg=Math.max(1,b.atk+roll(6)-2-armorDef(t)-(S.force?5:0));if(S._god)dmg=0;t.hp=Math.max(0,t.hp-dmg);log(b.name+' hits '+t.name+' for '+dmg+'.'+(S._god?' <span style="color:#ffdc63">(god mode)</span>':(S.force?' Force Field absorbs the worst.':'')));if(S.force)S.force--;tone(135,.08,'sawtooth',.05);if(!living().length)gameOver()}
+function winBattle(){var b=S.battle,g=Math.ceil(b.xp*0.8);log('<b>'+b.name+' defeated.</b> XP '+b.xp+' / Thin Gold '+g+'.');S.gold+=g;var lvld=false;S.party.forEach(p=>{p.xp+=b.xp;if(p.xp>=p.lvl*70){p.xp=0;p.lvl++;p.maxhp+=roll(6)+3;p.maxpp+=2;p.hp=p.maxhp;p.pp=p.maxpp;lvld=true;log('<b>'+p.name+' levels to '+p.lvl+'</b>.')}});if(b.name=='Queen Thrasher'){S.quests.queen=true;gain('Queen Seal');flag('queen')}if(b.name=='Nightmare Staff'){S.quests.nightmare=true;endGame()}S.battle=null;sfx('victory');if(lvld)setTimeout(function(){sfx('levelup')},340);updateBattle();updateHUD();draw()}
+function gameOver(){cinema('Party Lost','The nuclear twilight takes the party. Reload, re-equip, or begin again.');log('<b class=danger>Party lost.</b>');S.battle=null;updateBattle();draw()}
+function finalGate(){var need=[['crystal','Collects Crystal'],['crown','Crown of Zago'],['truth','Crystal of Seeing'],['queen','Queen Seal']];var miss=need.filter(function(n){return !(S.quests[n[0]]||S.flags[n[0]])});if(miss.length){var names=miss.map(function(m){return m[1]}).join(', ');cinema('The Final Seal Holds','Still needed: '+names+'. Search Mt. Truth for the glowing seal markers and defeat the Queen Thrasher, then return to this door.');toast('Missing: '+names);log('<b style="color:#ff9a5a">Final Seal needs:</b> '+names+'.');return}if(!S.quests.nightmare){cinema('Nightmare Staff Awakens','Behind the Queen Seal stands the Nightmare Staff \u2014 the last dream of the old world. Defeat it to open MindScape.');startBattle('Nightmare Staff',true);return}endGame()}
+var END={
+ whole:{title:'The Whole Story',sub:'Every voice kept; every door opened.',body:'You walked the whole of MindScape and left no one behind \u2014 skeleton, gremlin, oracle, fairy, dragon, and queen carried through the last seal as friends, not trophies. The hidden rooms gave up their secrets, and the secrets gave up their fear. When the Nightmare Staff fell, New Earth did not simply change shape; it remembered how to be kind. The old world ended in fire. This one begins in welcome.'},
+ neighbor:{title:'The Good Neighbor',sub:'You won the world by being worth trusting.',body:'Pact after pact, you chose the harder grace: to listen before you struck, to keep your word in a place that had forgotten words. The beings of the MindScape did not follow your power \u2014 they followed your decency. The Nightmare Staff broke against a party that had become a neighborhood, and New Earth woke gentler for it.'},
+ conqueror:{title:'The Conqueror',sub:'The seals are yours. The silence is the price.',body:'You took Mt. Truth the old way \u2014 edge first, questions never. The seals answered to strength, and strength was enough; the Nightmare Staff fell to a party that asked little and spared less. New Earth is free now, and wary of you. Some doors you forced will not open again. Still \u2014 the twilight is broken, and that is no small thing.'},
+ seeker:{title:'The Seeker',sub:'You read the dungeon like scripture.',body:'You found the rooms behind the rooms and the rules behind the rules. Where others fought or fled, you understood \u2014 and understanding was its own key. The Nightmare Staff was not so much defeated as explained, unwound back into the dream it came from. New Earth keeps your map like a holy text.'},
+ liberator:{title:'The Liberator',sub:'The twilight breaks. MindScape opens.',body:'The four seals turned, the Nightmare Staff fell, and the long dark over New Earth finally lifted. The party carries story, rules, and will back into a world ready to be more than it was. The file was small. The world it opened is not.'}
+};
+function showEnding(e,st){var o=document.getElementById('ending');if(!o){o=document.createElement('div');o.id='ending';document.body.appendChild(o)}var sig=(typeof sigil==='function')?sigil(e.title):'';o.innerHTML='<div class=endwrap><div class=endsig>'+sig+'</div><div class=endkicker>MINDSCAPE \u00B7 VICTORY</div><h1 class=endtitle>'+e.title+'</h1><div class=endsub>'+e.sub+'</div><p class=endbody>'+e.body+'</p><div class=endstats>Pacts forged <b>'+st.pacts+'</b> &nbsp;\u00B7&nbsp; Hidden rooms <b>'+st.secrets+'/3</b> &nbsp;\u00B7&nbsp; Beings resolved <b>'+st.gone+'</b> &nbsp;\u00B7&nbsp; Turns <b>'+st.turn+'</b> &nbsp;\u00B7&nbsp; Thin Gold <b>'+st.gold+'</b> &nbsp;\u00B7&nbsp; Mode <b>'+st.diff+'</b></div><div class=endbtns><button class=endbtn onclick="location.reload()">Begin Again</button><button class=endbtn2 onclick="hideEnding()">Keep Exploring</button></div><div class=endcredit>Adapted from the MindScape RPG by Luminosity \u2014 Matthew Kowalski \u00B7 $unixarcade</div></div>';o.classList.add('on')}
+function hideEnding(){var o=document.getElementById('ending');if(o)o.classList.remove('on')}
+function endGame(){S.won=true;try{sfx('victory')}catch(e){}var pk=['oracle','fairy','gremlin','wolf','cloud','weather','truth','dragon','witness','queen','bone','goblin','hypno','ace','zmaster','spy','monk','ninja','beast','mole','doll','song','echo','names','warden','rustpick','vell','quart','archive','cloudwright','firstvault'];var pacts=pk.filter(function(k){return S.flags[k]}).length;var secrets=Object.keys(S.secrets||{}).length;var gone=Object.keys(S.npcGone||{}).length;var diff=['Explorer','Standard','Hardcore'][S.diff||1];var e;if(pacts>=15&&secrets>=3)e=END.whole;else if(pacts>=10)e=END.neighbor;else if(pacts<=4)e=END.conqueror;else if(secrets>=3)e=END.seeker;else e=END.liberator;log('<b style="color:#ffdc63">\u2726 ENDING \u2014 '+e.title+'</b>: '+e.sub);showEnding(e,{pacts:pacts,secrets:secrets,gone:gone,turn:S.turn,gold:S.gold,diff:diff})}
+function rest(){if(S.battle)return toast('No camp in combat.');S.turn+=6;S.party.forEach(p=>{p.hp=Math.min(p.maxhp,p.hp+roll(6)+3);p.pp=Math.min(p.maxpp+(gearBonus(p).pp||0),p.pp+3)});log('Camp: HP and PP restored a little.');if(Math.random()<.28)startBattle(pick(level().enc));updateHUD();draw()}
+function updateBattle(){let b=S.battle,bb=$('#bossbar');if(!b){bb.classList.remove('on');bb.innerHTML='';return}bb.classList.add('on');bb.innerHTML=`<b>${b.name}</b><span class=tiny> · ${Math.max(0,b.hp)}/${b.max} HP</span><div class=hpbar><i style="width:${clamp(b.hp/b.max*100,0,100)}%"></i></div>`}
+function updateHUD(){$('#where').textContent=level().name+' · '+DN[S.d]+' · x'+S.x+' y'+S.y+' · Thin Gold '+S.gold;$('#turn').textContent='TURN '+S.turn;$('#compass').textContent='DIR '+DN[S.d];$('#party').innerHTML=S.party.map((p,i)=>{let gb=gearBonus(p),hpw=clamp(p.hp/p.maxhp*100,0,100),ppmax=p.maxpp+(gb.pp||0),ppw=clamp(p.pp/ppmax*100,0,100),xpw=clamp(p.xp/(p.lvl*70)*100,0,100);return `<div class="pc ${i==selected?'sel':''}" onclick="selected=${i};openEquip(${i})"><div class=portrait>${portrait(p)}</div><div><b>${p.name}</b><div class=tiny>${p.race} / ${p.clan} / ${p.skill} · Lv ${p.lvl}</div><div class=bars><div class="bar hp"><i style="width:${hpw}%"></i></div><div class="bar pp"><i style="width:${ppw}%"></i></div><div class="bar xp"><i style="width:${xpw}%"></i></div></div><div class=tiny>HP ${p.hp}/${p.maxhp} PP ${p.pp}/${ppmax}</div><div class=slots>${['weapon','armor','relic','charm'].map(s=>`<span class=slot title="${s}: ${p.equip[s]||'empty'}">${ITEM[p.equip[s]]?.icon||'·'}</span>`).join('')}</div></div></div>`}).join('');let flags=['oracle','fairy','gremlin','wolf','cloud','weather','truth','dragon','witness','queen'];$('#quest').innerHTML='<b>Seals:</b> '+Object.entries(S.quests).map(([k,v])=>`<span class="flag ${v?'on':''}">${k}</span>`).join(' ')+'<br><b>Pacts:</b> '+flags.map(k=>`<span class="flag ${S.flags[k]?'on':''}">${k}</span>`).join(' ')+'<p><b>Inventory:</b> '+S.inv.join(' · ')+'</p>'}
+function rel(dist,side=0){let [fx,fy]=DIRS[S.d], [rx,ry]=DIRS[(S.d+1)%4];return [S.x+fx*dist+rx*side,S.y+fy*dist+ry*side]}function wallAt(dist,side=0){let [x,y]=rel(dist,side);return cell(x,y)=='#'}function tileAt(dist,side=0){let [x,y]=rel(dist,side);return cell(x,y)}
+function draw(){resize();drawStars();draw3d();drawMap();updateBattle();updateHUD()}
+function resize(){for(let cv of [$('#view'),$('#map'),$('#stars')]){let r=cv.getBoundingClientRect(),d=devicePixelRatio||1,W=Math.max(1,Math.floor(r.width*d)),H=Math.max(1,Math.floor(r.height*d));if(cv.width!=W||cv.height!=H){cv.width=W;cv.height=H}}vctx=$('#view').getContext('2d');mctx=$('#map').getContext('2d');stx=$('#stars').getContext('2d')}
+function drawStars(){let c=stx,w=c.canvas.width,h=c.canvas.height;c.clearRect(0,0,w,h);c.fillStyle='#000';c.fillRect(0,0,w,h);for(let i=0;i<150;i++){let x=(Math.sin(i*991+t*.013)*.5+.5)*w,y=(Math.cos(i*431+t*.009)*.5+.5)*h;c.fillStyle=i%7?'#55ff6630':'#ffdc6350';c.fillRect(x,y,1+(i%3),1+(i%2))}}
+function rFor(d,w,h){let scale=1/(d*.58+.48),cw=w*.43*scale,ch=h*.36*scale;return {x1:w/2-cw,y1:h/2-ch*.82,x2:w/2+cw,y2:h/2+ch}}
+function poly(c,pts,fill,stroke){c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.stroke()}}
+function draw3d(){rcRender()}
+function drawSide(c,p,r,side,L,d,fog){let pts=side=='L'?[[p.x1,p.y1],[r.x1,r.y1],[r.x1,r.y2],[p.x1,p.y2]]:[[p.x2,p.y1],[r.x2,r.y1],[r.x2,r.y2],[p.x2,p.y2]];
+ poly(c,pts,shade(L.wall,0.55+fog*0.95),null);
+ let nTop=pts[0],fTop=pts[1],fBot=pts[2],nBot=pts[3];
+ c.save();c.beginPath();pts.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();c.clip();
+ let courses=8;for(let i=0;i<=courses;i++){let a=i/courses,ax=nTop[0]+(nBot[0]-nTop[0])*a,ay=nTop[1]+(nBot[1]-nTop[1])*a,bx=fTop[0]+(fBot[0]-fTop[0])*a,by=fTop[1]+(fBot[1]-fTop[1])*a;c.strokeStyle='rgba(0,0,0,0.55)';c.lineWidth=1;c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.stroke();if(i%2===0){c.strokeStyle=withHex(L.theme,0.07*fog);c.beginPath();c.moveTo(ax,ay+1);c.lineTo(bx,by+1);c.stroke();}}
+ c.restore();
+ if(fog>0.62){let tx=(nTop[0]+fTop[0])/2,ty=(nTop[1]+fTop[1])/2+(r.y2-r.y1)*0.2,fk=0.55+0.45*Math.sin(t*0.18+d*1.3+(side=='L'?0:2.1)),rad=Math.abs(nBot[0]-fBot[0])+44;c.save();c.globalCompositeOperation='lighter';let g=c.createRadialGradient(tx,ty,0,tx,ty,rad);g.addColorStop(0,withHex('#ffb14d',0.2*fk));g.addColorStop(0.5,withHex('#ff7a2a',0.07*fk));g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(tx,ty,rad,0,7);c.fill();c.restore();}
+ poly(c,pts,'rgba(0,0,0,0)',withHex(L.theme,0.42*fog));}
+function drawFront(c,r,L,d,fog){let x=r.x1,y=r.y1,W=r.x2-r.x1,H=r.y2-r.y1;c.fillStyle=shade(L.wall,0.5+fog*0.9);c.fillRect(x,y,W,H);
+ c.save();c.beginPath();c.rect(x,y,W,H);c.clip();let rows=7,colW=W/5;for(let ry=0;ry<=rows;ry++){let yy=y+H*ry/rows;c.strokeStyle='rgba(0,0,0,0.55)';c.lineWidth=1;c.beginPath();c.moveTo(x,yy);c.lineTo(x+W,yy);c.stroke();let off=(ry%2)*colW/2;for(let bx=x-colW+off;bx<x+W+colW;bx+=colW){c.beginPath();c.moveTo(bx,yy);c.lineTo(bx,yy+H/rows);c.stroke();}}c.restore();
+ let cx=x+W/2,cy=y+H/2,rad=Math.min(W,H)*0.2;c.save();c.globalCompositeOperation='lighter';let gg=c.createRadialGradient(cx,cy,0,cx,cy,rad*2.4);gg.addColorStop(0,withHex(L.theme,0.4*fog));gg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=gg;c.beginPath();c.arc(cx,cy,rad*2.4,0,7);c.fill();
+ c.strokeStyle=withHex(L.theme,0.9*fog);c.lineWidth=2;c.beginPath();c.arc(cx,cy,rad,0,7);c.stroke();c.beginPath();c.arc(cx,cy,rad*0.6,0,7);c.stroke();
+ for(let i=0;i<8;i++){let a=i*Math.PI/4+t*0.01;c.beginPath();c.moveTo(cx+Math.cos(a)*rad*0.6,cy+Math.sin(a)*rad*0.6);c.lineTo(cx+Math.cos(a)*rad*1.5,cy+Math.sin(a)*rad*1.5);c.stroke();}
+ c.fillStyle=withHex(L.theme,fog);c.beginPath();c.arc(cx,cy,rad*0.16,0,7);c.fill();c.restore();
+ c.save();let vg=c.createRadialGradient(cx,cy,rad,cx,cy,Math.max(W,H));vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.66)');c.fillStyle=vg;c.fillRect(x,y,W,H);c.restore();
+ c.strokeStyle=withHex(L.theme,0.8*fog);c.lineWidth=2;c.strokeRect(x,y,W,H);}
+function drawFloorGlyph(c,r,tile,L,d){if(!'CTFOXBNWS'.includes(tile))return;let cx=(r.x1+r.x2)/2,base=r.y2-(r.y2-r.y1)*0.1,sz=Math.max(11,(r.x2-r.x1)*0.1),col={C:'#48eaff',T:'#ffdc63',F:'#7CFF8A',O:'#c96cff',X:'#ffffff',B:'#ff3355',N:'#dfe9ff',W:'#b8ff65',S:'#55ff66'}[tile]||L.theme,bob=Math.sin(t*0.12+cx*0.01)*sz*0.18;
+ c.save();c.globalCompositeOperation='lighter';let g=c.createRadialGradient(cx,base,0,cx,base,sz*2.6);g.addColorStop(0,withHex(col,0.5));g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.ellipse(cx,base,sz*2.4,sz*1.0,0,0,7);c.fill();c.restore();
+ c.save();c.translate(cx,base-sz-bob);c.shadowColor=col;c.shadowBlur=16;c.strokeStyle=col;c.fillStyle=col;c.lineWidth=2;drawIcon(c,tile,sz,col,L);c.restore();}
+function frontEntity(){for(let d=1;d<=4;d++){let [x,y]=rel(d,0),ev=level().events[x+','+y];if(ev){return {name:ev.npc||ev.title,kind:ev.battle?'monster':(ev.npc?'npc':'relic'),dist:d}}}return null}
+function drawSprite(c,w,h,name,kind,dist,theme){let cat=spriteCat(name),big=(kind=='monster'),sc=clamp(Math.min(w,h)*(big?0.3:0.22)/(dist*0.32+1),28,Math.min(w,h)*0.42),cx=w/2,cy=h*0.5+(dist-1)*h*0.045,bob=Math.sin(t*0.12+dist)*sc*0.05,col=kind=='monster'?'#ff5a6e':(kind=='npc'?'#ffdc63':'#48eaff');
+ if(cat=='wolf'||cat=='spirit')col='#bfe9ff';if(cat=='fairy')col='#9CFFB0';if(cat=='nightmare')col='#c96cff';if(cat=='cloud')col='#bfe2ff';
+ c.save();c.globalCompositeOperation='lighter';let g=c.createRadialGradient(cx,cy+sc*0.96,0,cx,cy+sc*0.96,sc*1.6);g.addColorStop(0,withHex(col,0.28));g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.ellipse(cx,cy+sc*0.98,sc*1.4,sc*0.4,0,0,7);c.fill();c.restore();
+ c.save();c.translate(cx,cy+bob);c.shadowColor=col;c.shadowBlur=24;c.lineWidth=Math.max(2,sc*0.03);c.strokeStyle=col;c.fillStyle=kind=='monster'?'rgba(40,2,10,0.82)':(kind=='npc'?'rgba(28,20,3,0.82)':'rgba(6,22,28,0.82)');
+ if(cat&&SPR[cat])SPR[cat](c,sc,col,theme);else if(kind=='npc')(SPR[npcSkin(name)]||SPR.npc)(c,sc,col,theme);else SPR.blob(c,sc,col,theme,name);
+ c.shadowBlur=0;c.fillStyle='#fff';c.font='900 '+Math.max(11,sc*0.16)+'px monospace';c.textAlign='center';c.fillText(name.toUpperCase(),0,sc*1.5);c.textAlign='left';c.restore();}
+function drawFrame(c,w,h,theme){c.strokeStyle=theme;c.lineWidth=3;c.strokeRect(8,8,w-16,h-16);c.strokeStyle='#ffdc6388';c.strokeRect(16,16,w-32,h-32);c.fillStyle=theme;c.font=Math.max(11,w/72)+'px monospace';c.fillText('LV '+(S.l+1)+'  '+level().name+'  '+DN[S.d],22,34)}
+function drawMap(){let c=mctx,w=c.canvas.width,h=c.canvas.height,m=map(),tw=w/m[0].length,th=h/m.length,L=level();c.clearRect(0,0,w,h);c.fillStyle='#02100a';c.fillRect(0,0,w,h);
+ var theme=L.theme||'#55ff66',tc=_hx(theme);c.textAlign='center';c.textBaseline='middle';c.font='bold '+(Math.min(tw,th)*0.9)+'px monospace';
+ let GC={S:'#55ff66',C:'#48eaff',T:'#ffdc63',F:'#7CFF8A',O:'#c96cff',X:'#ffffff',B:'#ff3355',N:'#dfe9ff',W:'#b8ff65'};
+ for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++){
+  let vis=S.visited[S.l+','+x+','+y],near=Math.abs(x-S.x)+Math.abs(y-S.y)<=2;if(!vis&&!near)continue;
+  let ch=m[y][x],ev=L.events[x+','+y],px=x*tw,py=y*th,cw=Math.ceil(tw)+0.5,chh=Math.ceil(th)+0.5;
+  if(ch=='#'){c.fillStyle='rgba('+tc[0]+','+tc[1]+','+tc[2]+','+(vis?0.17:0.06)+')';c.fillRect(px,py,cw,chh);continue}
+  c.fillStyle=vis?'rgba(8,26,14,0.95)':'rgba(5,15,10,0.65)';c.fillRect(px,py,cw,chh);
+  if(vis){c.fillStyle='rgba('+tc[0]+','+tc[1]+','+tc[2]+',0.05)';c.fillRect(px,py,cw,chh)}
+  if(!vis)continue;
+  let letter=null,col='#7CFF8A';
+  if('SCTFOXBNW'.indexOf(ch)>=0){letter=ch;col=GC[ch]}
+  else if(ev){if(ev.npc){if(/shop|merchant|quarter|rustpick|vell|smith/i.test(ev.npc)){letter='$';col='#ffdc63'}else{letter='\u2022';col='#9CFFB0'}}else if(ev.battle){letter='!';col='#ff5a6e'}else if(ev.stairs!=null||ev.win){letter='\u25BC';col='#ffdc63'}else if(ev.item||ev.gold){letter='*';col='#ffdc63'}else if(ev.quest){letter='\u2726';col='#48eaff'}else{letter='?';col='#9aa6aa'}}
+  if(S.secrets&&S.secrets[S.l+'_'+x+'_'+y]){letter='\u2726';col='#ffdc63'}
+  if(letter){c.save();c.shadowColor=col;c.shadowBlur=6;c.fillStyle=col;c.fillText(letter,(x+.5)*tw,(y+.55)*th);c.restore()}
+ }
+ var pxc=(S.x+.5)*tw,pyc=(S.y+.5)*th,r=Math.max(2.6,tw*0.32),pulse=0.6+0.4*Math.sin(t*0.15);
+ c.save();c.globalCompositeOperation='lighter';var pg=c.createRadialGradient(pxc,pyc,0,pxc,pyc,r*2.4);pg.addColorStop(0,'rgba(255,90,110,'+(0.5*pulse).toFixed(2)+')');pg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=pg;c.beginPath();c.arc(pxc,pyc,r*2.4,0,7);c.fill();c.restore();
+ var d=DIRS[S.d],ang=Math.atan2(d[1],d[0]);c.save();c.translate(pxc,pyc);c.rotate(ang);c.fillStyle='#ff5a6e';c.strokeStyle='#fff';c.lineWidth=1;c.beginPath();c.moveTo(r*1.5,0);c.lineTo(-r*0.85,-r*0.9);c.lineTo(-r*0.3,0);c.lineTo(-r*0.85,r*0.9);c.closePath();c.fill();c.stroke();c.restore();
+ c.fillStyle='rgba(0,0,0,0.62)';c.fillRect(2,2,52,16);c.fillStyle=theme;c.textAlign='left';c.font='bold 10px monospace';c.fillText('LVL '+(S.l+1)+'/3',6,11)}
+function openEquip(i=selected){selected=i;sfx('open');let p=S.party[i];let paper=paperDoll(p);
+ let rows=['weapon','armor','relic','charm'].map(slot=>{let items=S.inv.filter(it=>ITEM[it]?.slot==slot&&(!isEquipped(it)||p.equip[slot]==it));items.unshift('');
+  return `<div class=eqrow><b>${slot}</b><div><div class=tiny>current: ${p.equip[slot]?(itemIcon(p.equip[slot])+' '+p.equip[slot]):'empty'}</div><div class=itemBtns>${items.map(it=>`<button onclick="equip(${i},'${slot}','${(it||'').replaceAll("'","\\'")}')">${it?(itemIcon(it)+' '+it):'— empty —'}</button>`).join('')}</div></div></div>`}).join('');
+ $('#modalTitle').textContent='EQUIPMENT';
+ $('#modalContent').innerHTML=`<div class=equipGrid><div class=paper>${paper}</div><div><h2>${p.name}</h2><p class=tiny>${p.race} · ${p.clan} Clan · ${p.skill}<br>Stats with gear: STR ${stat(p,'str')} MAG ${stat(p,'mag')} SPD ${stat(p,'spd')} WILL ${stat(p,'will')} DEF ${armorDef(p)} ATK+ ${gearBonus(p).atk||0}</p><div class=equipSlots>${rows}</div><p class=tiny style="margin-top:.6rem;opacity:.7">Spend Thin Gold at the shopkeeper on each level — basic gear, and rare masterwork pieces.</p></div></div>`;
+ $('#modal').classList.add('on')}
+function isEquipped(item){return !!item&&S.party.some(p=>Object.values(p.equip).includes(item))}
+function equip(i,slot,item){var old=S.party[i].equip[slot];if(old&&!S.inv.includes(old))S.inv.push(old);S.party[i].equip[slot]=item;if(item){if(!S.inv.includes(item))S.inv.push(item);sfx('equip')}else sfx('click');toast(item?('Equipped '+item):('Returned '+slot+' gear to pack'));openEquip(i);updateHUD();draw()}
+function openCodex(){sfx('open');let html='<div class=cards>'+DATA.sections.map(s=>`<div class=card>${sigil(s[0])}<b>${s[0]}</b><p class=tiny>Pages ${s[1]}–${s[2]} · ${s[3]}</p></div>`).join('')+'</div>';
+ let lore=[['The Nuclear Twilight',DATA.story.nuclear],['The Upper World',DATA.story.upper],['The Underground',DATA.story.underground]];
+ html+='<h2 style="color:var(--gold)">Mythos of MindScape</h2><div class=cards>'+lore.map(l=>`<div class=card><b>${l[0]}</b><p class=tiny>${(l[1]||'').slice(0,360)}…</p></div>`).join('')+'</div>';
+ let pacts=Object.keys(S.flags||{}).filter(k=>S.flags[k]);
+ html+='<h2 style="color:var(--cyan)">Beings &amp; Pacts</h2><p class=tiny>'+(pacts.length?('Pacts kept: <b>'+pacts.join('</b> · <b>')+'</b>'):'No pacts kept yet — talk to the beings of New Earth.')+'</p>';
+ html+='<p class=tiny><b>Seals held:</b> '+(Object.keys(S.quests).filter(k=>S.quests[k]).join(' · ')||'none yet')+'</p>';
+ html+='<h2 style="color:var(--cyan)">Creatures / Gear / Spells</h2><p class=tiny><b>Creatures:</b> '+DATA.creatures.join(' · ')+'</p><p class=tiny><b>Important gear:</b> '+Object.keys(ITEM).join(' · ')+'</p><p class=tiny><b>Spell bank:</b> '+DATA.spells.slice(0,40).join(' · ')+'…</p>';
+ let ang='';for(let i=0;i<14;i++)ang+='<div style=\"width:62px\">'+angelicGlyph(i)+'</div>';html+='<h2 style=\"color:#c78dff\">\u2726 The Angelic Script</h2><p class=tiny>The Witness of Names keeps these. Every being, seal, and pact in the MindScape is signed with one of the old letters \u2014 the script the frozen world tried to forget.</p><div style=\"display:flex;flex-wrap:wrap;gap:.5rem;margin:.4rem 0\">'+ang+'</div>';
+html+='<p class=credit>This dungeon is adapted from the <b>MindScape RPG</b> by <b>Luminosity</b> — Matthew Kowalski.<br>Support the work: <b class=cash>$unixarcade</b> on CashApp.</p>';$('#modalTitle').textContent='MINDSCAPE CODEX';$('#modalContent').innerHTML=html;$('#modal').classList.add('on')}
+function closeModal(){$('#modal').classList.remove('on')}
+function saveGame(){try{localStorage.mindscapeDOS2=JSON.stringify(S);toast('Saved to localStorage');sfx('click')}catch(e){toast('Save failed')}}
+function loadGame(){let v=localStorage.mindscapeDOS2||localStorage.mindscapeDOS;if(!v)return toast('No save found');try{S=JSON.parse(v)}catch(e){return toast('Save corrupt')}S.flags=S.flags||{};S.done=S.done||{};S.quests=S.quests||{};S.npcUsed=S.npcUsed||{};S.npcGone=S.npcGone||{};S.party.forEach(p=>p.equip=p.equip||{weapon:'',armor:'',relic:'',charm:''});if(typeof reconcileNpcs==='function')reconcileNpcs();$('#gate').classList.add('off');toast('Loaded');S._loggedL=null;if(typeof RC!=='undefined')RC.lastL=-1;updateHUD();draw()}
+function shake(){let el=$('.viewport');el.style.transform='translateX(2px)';setTimeout(()=>el.style.transform='',80)}function loop(){}addEventListener('keydown',e=>{if($('#modal').classList.contains('on')&&e.key=='Escape')return closeModal();if(!S)return;if(['ArrowUp','w','W'].includes(e.key))move(1);if(['ArrowDown','s','S'].includes(e.key))move(-1);if(['ArrowLeft','a','A'].includes(e.key))turn(-1);if(['ArrowRight','d','D'].includes(e.key))turn(1);if(e.code=='Space')interact();if(['e','E'].includes(e.key))openEquip();if(['l','L'].includes(e.key))look()});addEventListener('resize',()=>draw());init();
+</script></body></html>
